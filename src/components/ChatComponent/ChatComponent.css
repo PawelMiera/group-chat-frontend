@@ -1,0 +1,37 @@
+.chatComponentContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    padding: 30px;
+    background-color: var(--col-containers);
+    border-radius: 3vh;
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    gap: 10px;
+}
+
+.chatContainer{
+    background-color: var(--col-containers);
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.sendMessageDiv {
+    display: flex;
+    position: sticky;
+    gap: 10px;
+    bottom: 0;
+}
+
+.form-control {
+    word-wrap: break-word !important;
+    word-break: break-all !important;
+    max-height: 100px;
+    resize: none;
+}
+
+.form-control:focus {
+    border-color: #000000 !important;
+  }

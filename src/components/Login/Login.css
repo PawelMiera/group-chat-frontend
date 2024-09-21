@@ -1,0 +1,32 @@
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+  }
+  
+  
+  .login-form-container {
+    width: 30vw;
+    padding: 20px 20px 20px 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-color: var(--col-white);
+  }
+  
+  .login-title {
+    text-align: center;
+
+  }
+  
+  .login-form {
+    text-align: left;
+  }
+  
+  .login-button {
+    width: 100%;
+  }
+
+  /* .col_main_purple{
+    background-color: var(--col-chat-you);
+  } */
