@@ -1,0 +1,25 @@
+.inputGrid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-control-modal {
+    background-color: var(--col-text-input-modal) !important;
+    border-color: var(--col-text-input-modal) !important;
+}
+
+.form-control-modal:focus {
+    border-color: var(--col-text-input-modal) !important;
+}
+
+.smallText {
+    font-size: 0.8em;
+}
+
+.fontRed {
+    color: red;
+}

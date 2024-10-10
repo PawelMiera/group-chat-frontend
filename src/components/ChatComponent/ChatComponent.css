@@ -30,8 +30,10 @@
     word-break: break-all !important;
     max-height: 100px;
     resize: none;
+    background-color: var(--col-text-input)!important;
+    border-color: var(--col-text-input) !important;
 }
 
 .form-control:focus {
-    border-color: #000000 !important;
+    border-color: var(--col-text-input) !important;
   }

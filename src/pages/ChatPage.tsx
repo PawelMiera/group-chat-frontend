@@ -1,10 +1,8 @@
 // import NavBar from "../components/NavBar";
-import { Button } from "react-bootstrap";
 import ChatComponent from "../components/ChatComponent/ChatComponent";
-import GroupElement from "../components/GroupElement/GroupElement";
-import {ChatMessageInterface} from "../common/types"
+import {ChatMessageInterface, GroupInterface} from "../common/types"
 import "./ChatPage.css";
-import SettingsIcon from '../assets/icons/settings_icon.svg';
+import GroupComponent from "../components/GroupComponent/GroupComponent";
 
 export const ChatPage = () => {
 
@@ -37,33 +35,28 @@ export const ChatPage = () => {
   messages.push(msg2)
 
 
+  const groups : GroupInterface[] = []
+  let grp: GroupInterface = {
+    name:"Rybactwo",
+    last_message: "dsadsasad",
+    last_user: "pawel",
+  };
+
+
+  groups.push(grp);
+  groups.push(grp);
+  groups.push(grp);
+  let grp2 = structuredClone(grp);
+  grp2.name = "Mojo Dojo";
+  grp2.last_message= "Casa Home";
+  grp2.last_user="Ken";
+  groups.push(grp2);
+  groups.push(grp2);
+
   return (
     <>
       <div className="chatGrid">
-        <div className="leftContainer">
-          <div className="settingsDiv">
-            <Button className="defaultAppColor">New group</Button>
-            <Button className="defaultAppColor">Join group</Button>
-            <img src={SettingsIcon} alt="Settings icon" className="accountSettingsIcon" width={40}/>
-          </div>
-          <div className="groupContainer">
-            <GroupElement is_selected={false} group_name="Moj Dom" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={true} group_name="Mojo Dojo Cassa Home" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-            <GroupElement is_selected={false} group_name="Rybactwo" last_user="Pawel Miera" last_message="ale bekaaaaa dsfsfsfsfsfsfsfsfsfsfsf  fdsssssssssssf fdsdfs              sdfsdfsdf"></GroupElement>
-          </div>
-        </div>
+        <GroupComponent groups={groups} selected_group={0}></GroupComponent>
         <ChatComponent messages={messages} username="pawel"></ChatComponent>
 
       </div>

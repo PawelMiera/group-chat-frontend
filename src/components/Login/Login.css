@@ -11,12 +11,15 @@
     padding: 20px 20px 20px 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    background-color: var(--col-white);
+    background-color: var(--col-dialog);
   }
   
   .login-title {
     text-align: center;
+  }
 
+  .loginColWhite {
+    color: var(--col-white);
   }
   
   .login-form {

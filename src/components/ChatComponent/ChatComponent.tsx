@@ -25,10 +25,11 @@ const ChatComponent = (props: ChatComponentProps) => {
     <>
       <div className="chatComponentContainer">
         <div className="chatContainer">
-          {props.messages.map((item) => (
+          {props.messages.map((item, index) => (
             <ChatBubble
               is_curr_user={props.username == item.user}
               message_time={item.time}
+              key={index}
             >
               {item.message}
             </ChatBubble>
@@ -41,6 +42,7 @@ const ChatComponent = (props: ChatComponentProps) => {
             onChange={handleChange}
             ref={textAreaRef}
             rows={1}
+            placeholder="Your Message"
           ></textarea>
           <Button className="defaultAppColor">Send</Button>
         </div>
