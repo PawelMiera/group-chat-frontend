@@ -31,3 +31,18 @@ export let fetchRefreshToken = async (refresh: string) => {
     
     return [response.ok, response.status, data];
 }; 
+
+
+export let fetchGetUser = async (authHeader: string) => {
+
+    const requestOptions = {
+        method: 'GET',
+        headers: {'Content-type': 'application/json', "Authorization": authHeader},
+    };
+
+    const response = await fetch(`${API_BASE_URL}/user/`, requestOptions);
+
+    const data = await response.json();
+    
+    return [response.ok, response.status, data];
+}; 

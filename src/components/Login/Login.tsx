@@ -3,6 +3,7 @@ import { Form, Button } from "react-bootstrap";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
 import { fetchRegister } from "../../services/ApiUser";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
 
 const Login = () => {
   const starting_email = localStorage.getItem("username")
@@ -10,6 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
   let navigate = useNavigate();
+  const signIn = useSignIn();
 
   const validateForm = () => {
     const newErrors = {email: "", password: ""};
@@ -35,9 +37,22 @@ const Login = () => {
         if(ok)
         {
           localStorage.setItem("username", email);
-          localStorage.setItem("accessToken", result["access"]);
-          localStorage.setItem("refreshToken", result["refresh"]);
-          navigate("/chat/");
+
+          if(signIn({
+            auth: {
+              token: result["access"],
+              type: "Bearer"
+            },
+            refresh: result["refresh"]
+          })){
+            window.location.reload();
+            // navigate("/chat/");
+          }
+          else{
+            console.log("Sign in Error");
+          }
+
+          // navigate("/chat/");
         }
         else
         {

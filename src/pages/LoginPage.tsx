@@ -1,41 +1,22 @@
 import Login from "../components/Login/Login";
 import NavBar from "../components/Navbar/NavBar";
 import "./LoginPage.css"
-import {fetchRefreshToken} from "../services/ApiUser"
-import {useEffect} from "react";
 import { useNavigate } from "react-router-dom";
+import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
+import { useEffect } from "react";
 
 export const LoginPage = () => {
   let navigate = useNavigate();
+  const isAuthenticated = useIsAuthenticated()
 
-  async function getToken(token: string) 
-  {
-    const [ok, _, data] = await fetchRefreshToken(token);
-
-    if(ok)
-    {
-      localStorage.setItem("accessToken", data["access"]);
-      localStorage.setItem("refreshToken", data["refresh"]);
-      navigate("/chat/");
-    }
-    else
-    {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-    }
-    
-  }
-
-
-  const refresh_token = localStorage.getItem("refreshToken");
-  
   useEffect(() => {
-    if (refresh_token!= null)
-    {
-      getToken(refresh_token);
-    }
 
-  }, []);  
+      if(isAuthenticated){
+          navigate("/chat/")
+      }
+
+  }, []);
+
 
 
   return (

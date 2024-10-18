@@ -17,7 +17,9 @@ export function NewGroupModal(props: Props) {
       "!@#$%^&*()0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let newPassword = "";
 
-    for (let i = 0; i < 16; i++) {
+    let c_len = Math.floor(Math.random() * (24 - 16 + 1) + 16);
+
+    for (let i = 0; i < c_len; i++) {
       newPassword += charset.charAt(Math.floor(Math.random() * charset.length));
     }
 
@@ -40,7 +42,7 @@ export function NewGroupModal(props: Props) {
             <div>Group Name:</div>
             <input
               className="form-control form-control-modal"
-              maxLength={30}
+              maxLength={50}
               onChange={(e) => setGroupName(e.target.value)}
             ></input>
 

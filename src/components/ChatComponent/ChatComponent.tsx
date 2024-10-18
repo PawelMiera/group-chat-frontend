@@ -1,13 +1,14 @@
 import { Button } from "react-bootstrap";
-import { ChatMessageInterface } from "../../common/types.tsx";
+import { MessageInterface } from "../../common/types.tsx";
 import ChatBubble from "../ChatBubble/ChatBubble.tsx";
 import "./ChatComponent.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useAutosizeTextArea from "./useAutosizeTextArea";
 
 interface ChatComponentProps {
-  messages: ChatMessageInterface[];
-  username: string;
+  messages: MessageInterface[];
+  user_id: string;
+  onSendClicked: (msg: string) => void;
 }
 
 const ChatComponent = (props: ChatComponentProps) => {
@@ -17,21 +18,46 @@ const ChatComponent = (props: ChatComponentProps) => {
 
   const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = evt.target?.value;
-
     setMessage(val);
   };
+
+  const clearAndSend = () => {
+    const temp = message;
+    setMessage("");
+    props.onSendClicked(temp);
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey)
+    {
+      e.preventDefault();
+      clearAndSend();
+    }
+  }
+
+  const container = useRef<HTMLDivElement>(null)
+
+  const Scroll = () => {
+    const { scrollHeight } = container.current as HTMLDivElement
+    container.current?.scrollTo(0, scrollHeight)
+  }
+
+  useEffect(() => {
+    Scroll()
+  }, [props.messages])
+
 
   return (
     <>
       <div className="chatComponentContainer">
-        <div className="chatContainer">
+        <div className="chatContainer" id="chat-feed" ref={container}>
           {props.messages.map((item, index) => (
             <ChatBubble
-              is_curr_user={props.username == item.user}
-              message_time={item.time}
-              key={index}
+              is_curr_user={props.user_id == item.author}
+              message_time={item.created}
+              key={"b"+index}
             >
-              {item.message}
+              {item.msg}
             </ChatBubble>
           ))}
         </div>
@@ -41,10 +67,14 @@ const ChatComponent = (props: ChatComponentProps) => {
             id="message-text"
             onChange={handleChange}
             ref={textAreaRef}
+            value={message}
             rows={1}
             placeholder="Your Message"
+            onKeyDown={handleKeyDown}
           ></textarea>
-          <Button className="defaultAppColor">Send</Button>
+          <div className="mt-auto">
+            <Button className="defaultAppColor" onClick={clearAndSend}>Send</Button>
+          </div>
         </div>
       </div>
     </>

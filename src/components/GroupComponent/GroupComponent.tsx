@@ -1,5 +1,5 @@
 import { Button } from "react-bootstrap";
-import { GroupInterface } from "../../common/types.tsx";
+import { GroupInterface, UserInterface, MessageInterface } from "../../common/types.tsx";
 import "./GroupComponent.css";
 import SettingsIcon from "../../assets/icons/settings_icon.svg";
 import GroupElement from "../GroupElement/GroupElement";
@@ -8,16 +8,15 @@ import { NewGroupModal } from "../NewGroupModal/NewGroupModal.tsx";
 
 interface GroupComponentProps {
   groups: GroupInterface[];
-  selected_group: number;
+  users:  UserInterface[];
+  selected_group: string;
+  onGroupSelected: (arg: string) => void;
 }
 
 const ChatComponent = (props: GroupComponentProps) => {
-  const [selectedGroup] = useState(props.selected_group);
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [_, setShowJoinGroupModal] = useState(false);
 
-
-    
   return (
     <>
     <NewGroupModal handleClosed={()=>{setShowNewGroupModal(false)}} show={showNewGroupModal}></NewGroupModal>
@@ -33,9 +32,11 @@ const ChatComponent = (props: GroupComponentProps) => {
           />
         </div>
         <div className="groupContainer">
-          {props.groups.map((item, index) => (
-            <GroupElement key={index} group_name={item.name} last_user={item.last_user} last_message={item.last_message} is_selected={selectedGroup==index}></GroupElement>
-          ))}
+          {
+            props.groups.map((value, index) => 
+                <GroupElement id={value.id} on_click={() =>{props.onGroupSelected(value.id)}} key={index} group_name={value.name} last_message={value.last_msg.msg} last_author={props.users.find((user) => user.id === value.last_msg.author)?.name} is_selected={props.selected_group==value.id}></GroupElement>
+              )
+          }
         </div>
       </div>
     </>
