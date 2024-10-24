@@ -7,6 +7,7 @@ import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';
 import refreshToken from "./services/RefreshTokens"
 import RequireAuth from '@auth-kit/react-router/RequireAuth'
+import { CookiesProvider } from 'react-cookie'
 
 function App() {
 
@@ -21,20 +22,22 @@ function App() {
 
 
   return (
-    <AuthProvider store={store}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/chat" element={
-            <RequireAuth fallbackPath="/login/">
-              <ChatPage />
-            </RequireAuth>
-            } />
-          <Route path="/*" element={<LoginPage />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <CookiesProvider>
+      <AuthProvider store={store}>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/chat" element={
+              <RequireAuth fallbackPath="/login/">
+                <ChatPage />
+              </RequireAuth>
+              } />
+            <Route path="/*" element={<LoginPage />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </CookiesProvider>
   );
 }
 

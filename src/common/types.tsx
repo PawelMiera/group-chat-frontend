@@ -16,6 +16,7 @@ export interface GroupInterface {
     id: string;
     uuid: string;
     members: string[];
+    avatar: string;
 }
 
 
@@ -23,6 +24,15 @@ export interface UserInterface {
     name: string;
     date_joined: string;
     id: string;
+    avatar: string;
+}
+
+export interface CurrUserInterface {
+    username: string;
+    nickname: string;
+    date_joined: string;
+    id: string;
+    avatar: string;
 }
 
 

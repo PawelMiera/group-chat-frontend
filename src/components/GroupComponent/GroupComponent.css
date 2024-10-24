@@ -21,10 +21,12 @@
 
 .accountSettingsIcon{
     margin-left: auto;
+    border-radius: 50%;
+    width: 60px;
 }
 
 .accountSettingsIcon:hover{
-    filter: brightness(111%) contrast(148%);
+    filter: brightness(110%);
     cursor: pointer;
 }
 

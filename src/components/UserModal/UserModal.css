@@ -1,0 +1,14 @@
+.userAvatar {
+    width: 150px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.userAvatar:hover {
+    filter: brightness(110%);
+}
+
+.inputImage {
+    display: none;
+}

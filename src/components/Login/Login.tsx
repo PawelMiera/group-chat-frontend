@@ -33,7 +33,7 @@ const Login = () => {
     if (validateForm()) {
 
       try{
-        const [ok, status, result] = await fetchRegister(email, password);
+        const [ok, _, result] = await fetchRegister(email, password);
         if(ok)
         {
           localStorage.setItem("username", email);

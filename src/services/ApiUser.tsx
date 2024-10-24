@@ -46,3 +46,19 @@ export let fetchGetUser = async (authHeader: string) => {
     
     return [response.ok, response.status, data];
 }; 
+
+
+export let fetchUpdateUser = async (authHeader: string, body_data: any) => {
+
+    const requestOptions = {
+        method: 'PATCH',
+        headers: {'Content-type': 'application/json', "Authorization": authHeader},
+        body: JSON.stringify(body_data)
+    };
+
+    const response = await fetch(`${API_BASE_URL}/user/`, requestOptions);
+
+    const data = await response.json();
+    
+    return [response.ok, response.status, data];
+}; 

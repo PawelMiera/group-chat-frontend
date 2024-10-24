@@ -2,19 +2,22 @@ import createRefresh from 'react-auth-kit/createRefresh';
 import {fetchRefreshToken} from "./ApiUser"
 
 const refreshToken = createRefresh({
-    interval: 10,
+    interval: 50,
     refreshApiCallback: async (param) => {
         try {
             const [ok, _, data] = await fetchRefreshToken(param.refreshToken || "");
             console.log("Refreshing token...")
 
             if(ok){
+                console.log("Token ok", data["access"]);
+
+
                 return {
                     isSuccess: true,
                     newRefreshToken: data["refresh"],
                     newAuthToken: data["access"],
-                    newAuthTokenExpireIn: 30,
-                    newRefreshTokenExpiresIn: 43200
+                    newAuthTokenExpireIn: 60,
+                    newRefreshTokenExpiresIn: 86400
                   }
             }
             else
