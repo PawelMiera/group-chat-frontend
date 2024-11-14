@@ -9,10 +9,10 @@ interface GroupElementProps {
   id: string;
   avatar: string;
   on_click: (arg: string) => void;
+  on_settings_click: (arg: string) => void;
 }
 
 const GroupElement = (props: GroupElementProps) => {
-  let group_name = props.group_name;
   let message_text = "";
   if (props.last_author != null && props.last_author != "") {
     message_text = props.last_author + ": " + props.last_message;
@@ -27,15 +27,17 @@ const GroupElement = (props: GroupElementProps) => {
         src={props.avatar}
         className="groupAvatar"
       />
-      <div className="groupText">
-        <div className="groupName">{group_name}</div>
-        {message_text}
+      <div className="groupText text-truncate">
+        <div className="groupName text-truncate">{props.group_name}</div>
+        <div className="groupText text-truncate">{message_text}</div>
+        
       </div>
       <img
         src={SettingsIcon}
         alt="Settings icon"
         className="settingsIcon"
         width={30}
+        onClick={() => props.on_settings_click(props.id)}
       />
     </div>
   );

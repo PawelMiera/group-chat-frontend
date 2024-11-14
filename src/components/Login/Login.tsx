@@ -1,69 +1,71 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form, Button } from "react-bootstrap";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
 import { fetchRegister } from "../../services/ApiUser";
-import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { useContext } from "react";
+import AuthContext from "../../context/AuthContext";
 
 const Login = () => {
-  const starting_email = localStorage.getItem("username")
-  const [email, setEmail] = useState(starting_email != null ? starting_email : "");
+  const starting_email = localStorage.getItem("username");
+  const [email, setEmail] = useState(
+    starting_email != null ? starting_email : ""
+  );
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
   let navigate = useNavigate();
-  const signIn = useSignIn();
+
+  const { signIn } = useContext(AuthContext);
 
   const validateForm = () => {
-    const newErrors = {email: "", password: ""};
-    if (!email) newErrors.email = 'Email or Username is required';
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+    const newErrors = { email: "", password: "" };
+    if (!email) newErrors.email = "Email or Username is required";
+    if (!password) newErrors.password = "Password is required";
+    else if (password.length < 8)
+      newErrors.password = "Password must be at least 8 characters";
     setErrors(newErrors);
     if (newErrors.email == "" && newErrors.password == "") {
       return true;
-    }
-    else {
+    } else {
       return false;
     }
   };
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
-    
-    if (validateForm()) {
 
-      try{
+    if (validateForm()) {
+      try {
         const [ok, _, result] = await fetchRegister(email, password);
-        if(ok)
-        {
+        if (ok) {
           localStorage.setItem("username", email);
 
-          if(signIn({
-            auth: {
-              token: result["access"],
-              type: "Bearer"
-            },
-            refresh: result["refresh"]
-          })){
-            window.location.reload();
-            // navigate("/chat/");
-          }
-          else{
-            console.log("Sign in Error");
-          }
+          console.log("SIGN IN", result);
+
+          signIn(result["access"], result["refresh"]);
+
+          navigate("/chat/");
+          // if(signIn({
+          //   auth: {
+          //     token: result["access"],
+          //     type: "Bearer"
+          //   },
+          //   refresh: result["refresh"]
+          // })){
+          //   window.location.reload();
+          //   // navigate("/chat/");
+          // }
+          // else{
+          //   console.log("Sign in Error");
+          // }
 
           // navigate("/chat/");
+        } else {
+          setErrors({ password: result.password, email: result.username });
         }
-        else
-        {
-          setErrors({password: result.password, email: result.username})
-        }
-      }
-      catch(error)
-      {
+      } catch (error) {
         console.log("APi error:", error);
       }
-      
     }
   };
 
@@ -71,7 +73,12 @@ const Login = () => {
     <div className="login-wrapper">
       <div className="login-form-container">
         <h2 className="login-title mb-3 loginColWhite">Anonymous</h2>
-        <Button variant="primary" type="submit" className="login-button defaultAppColor" onClick= {() => navigate("/chat")}>
+        <Button
+          variant="primary"
+          type="submit"
+          className="login-button defaultAppColor"
+          onClick={() => navigate("/chat")}
+        >
           Enter anonymously
         </Button>
         <h2 className="login-title my-3 loginColWhite">Login / Register</h2>
@@ -106,7 +113,12 @@ const Login = () => {
             </Form.Control.Feedback>
           </Form.Group>
 
-          <Button variant="primary" type="submit" className="login-button defaultAppColor" onClick={handleSubmit}>
+          <Button
+            variant="primary"
+            type="submit"
+            className="login-button defaultAppColor"
+            onClick={handleSubmit}
+          >
             Login / Register
           </Button>
         </Form>

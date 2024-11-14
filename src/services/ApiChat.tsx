@@ -1,5 +1,4 @@
-
-const API_BASE_URL = "http://localhost:8000/api";
+import {ApiUrl} from "./Urls";
 
 export let fetchGroups = async (authHeader: string) => {
 
@@ -8,7 +7,7 @@ export let fetchGroups = async (authHeader: string) => {
         headers: {'Content-type': 'application/json', "Authorization": authHeader},
     };
 
-    const response = await fetch(`${API_BASE_URL}/chat/groups/all/?start=0&end=20`, requestOptions);
+    const response = await fetch(`${ApiUrl}/chat/groups/all/?start=0&end=20`, requestOptions);
 
     const data = await response.text();
     
@@ -23,7 +22,7 @@ export let fetchGetGroupsMessages = async (authHeader: string, groupsCsv: string
         body: JSON.stringify({"groups": groupsCsv, "start": 0, "end": 20}),
     };
 
-    const response = await fetch(`${API_BASE_URL}/chat/groups/messages/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/chat/groups/messages/`, requestOptions);
 
     const data = await response.text();
     
@@ -35,10 +34,10 @@ export let fetchCreateNewGroup = async (authHeader: string, groupName: string) =
     const requestOptions = {
         method: 'POST',
         headers: {'Content-type': 'application/json', "Authorization": authHeader},
-        body: JSON.stringify({"group_name": groupName}),
+        body: JSON.stringify({"name": groupName}),
     };
 
-    const response = await fetch(`${API_BASE_URL}/chat/groups/new/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/chat/groups/new/`, requestOptions);
 
     const data = await response.json();
     
@@ -46,15 +45,15 @@ export let fetchCreateNewGroup = async (authHeader: string, groupName: string) =
 };
 
 
-export let fetchJoinGroup = async (authHeader: string, groupId: string) => {
+export let fetchJoinGroup = async (authHeader: string, groupUuid: string) => {
 
     const requestOptions = {
         method: 'POST',
         headers: {'Content-type': 'application/json', "Authorization": authHeader},
-        body: JSON.stringify({"group_id": groupId}),
+        body: JSON.stringify({"uuid": groupUuid}),
     };
 
-    const response = await fetch(`${API_BASE_URL}/chat/groups/join/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/chat/groups/join/`, requestOptions);
 
     const data = await response.json();
     
@@ -62,17 +61,51 @@ export let fetchJoinGroup = async (authHeader: string, groupId: string) => {
 }; 
 
 
-export let fetchGetGroup = async (authHeader: string, groupId: string) => {
+export let fetchGetGroup = async (authHeader: string, groupUuid: string) => {
 
     const requestOptions = {
         method: 'GET',
         headers: {'Content-type': 'application/json', "Authorization": authHeader},
     };
-    console.log("ID",groupId , `${API_BASE_URL}/chat/groups/?group_id=${groupId}`);
+    console.log("ID",groupUuid , `${ApiUrl}/chat/groups/?uuid=${groupUuid}`);
 
-    const response = await fetch(`${API_BASE_URL}/chat/groups/?group_id=${groupId}`, requestOptions);
+    const response = await fetch(`${ApiUrl}/chat/groups/?uuid=${groupUuid}`, requestOptions);
 
     const data = await response.json();
+    
+    return [response.ok, response.status, data];
+}; 
+
+
+export let fetchUpdateGroup = async (authHeader: string, body_data: any) => {
+
+    const requestOptions = {
+        method: 'PATCH',
+        headers: {'Content-type': 'application/json', "Authorization": authHeader},
+        body: JSON.stringify(body_data)
+    };
+
+    const response = await fetch(`${ApiUrl}/chat/groups/`, requestOptions);
+
+    const data = await response.json();
+    
+    return [response.ok, response.status, data];
+}; 
+
+
+export let fetchDeleteGroup = async (authHeader: string, uuid: string) => {
+
+    const requestOptions = {
+        method: 'DELETE',
+        headers: {'Content-type': 'application/json', "Authorization": authHeader},
+        body: JSON.stringify({"uuid": uuid })
+    };
+
+    const response = await fetch(`${ApiUrl}/chat/groups/`, requestOptions);
+
+    const data = await response.text();
+
+    console.log(data, response.status, response.ok);
     
     return [response.ok, response.status, data];
 }; 

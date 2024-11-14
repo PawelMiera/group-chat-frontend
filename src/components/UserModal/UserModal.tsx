@@ -8,7 +8,7 @@ import { useCookies } from "react-cookie";
 import "rc-slider/assets/index.css";
 import Slider from "rc-slider";
 import "./UserModal.css";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import useAxios from "../../utils/useAxios"
 
 import { fetchUpdateUser } from "../../services/ApiUser.tsx";
 
@@ -26,7 +26,7 @@ export function UserModal(props: Props) {
   const [nickname, setNickname] = useState("");
   const [cookies, _] = useCookies(["chatEncryption"]);
   const [scale, setScale] = useState(1.6);
-  const authHeader = useAuthHeader();
+  const api = useAxios();
 
   const closeModal = () => {
     setUploaded("");
@@ -37,11 +37,11 @@ export function UserModal(props: Props) {
     setNickname(props.user.nickname);
   }, [props.user.nickname]);
 
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (props.user.nickname != nickname) {
-        fetchUpdateUser(authHeader || "", { "first_name": nickname });
+
+        api.patch('/user/', { first_name: nickname });
 
         const user: CurrUserInterface = {
           nickname: nickname,
@@ -60,10 +60,9 @@ export function UserModal(props: Props) {
 
   const handleConfirmAvatar = () => {
     if (preparedImageRef.current != null) {
+      const new_avatar = preparedImageRef.current.getImage().toDataURL();
 
-      const new_avatar = preparedImageRef.current.getImage().toDataURL()
-
-      fetchUpdateUser(authHeader || "", { "avatar": new_avatar });
+      api.patch('/user/', { avatar: new_avatar });
 
       const user: CurrUserInterface = {
         nickname: props.user.nickname,
@@ -143,7 +142,7 @@ export function UserModal(props: Props) {
               onClick={handleAvatarClicked}
             ></img>
 
-            <div className="align-self-start mt-3 ms-1">Nickname</div>
+            <div className="align-self-start mt-2 ms-1">Nickname</div>
 
             <input
               type="text"
@@ -153,16 +152,29 @@ export function UserModal(props: Props) {
               placeholder={props.user.nickname}
               onChange={(e) => setNickname(e.target.value)}
             ></input>
-
-            <Button
-              className="defaultAppColor mt-3 mx-auto d-inline-flex btn-lg"
-              onClick={downloadEncryptionKeys}
-            >
-              Download encryption keys
-            </Button>
-
-            <Button className="btn-danger mt-3 btn-lg">Delete Account</Button>
           </Modal.Body>
+
+          <Modal.Footer className="d-flex flex-column align-items-center">
+            <div className="userButtonGrid mt-3">
+              <Button
+                className="defaultAppColor"
+                onClick={downloadEncryptionKeys}
+              >
+                Download encryption keys
+              </Button>
+
+              <Button
+                className="defaultAppColor"
+                onClick={downloadEncryptionKeys}
+              >
+                Upload encryption keys
+              </Button>
+
+              <Button className="defaultAppColor">Logout</Button>
+
+              <Button className="btn-danger ">Delete Account</Button>
+            </div>
+          </Modal.Footer>
         </Modal>
       </>
     );
@@ -199,12 +211,21 @@ export function UserModal(props: Props) {
               value={scale}
               onChange={handleScaleChanged}
             />
-            <Button
-              className="defaultAppColor mt-3 btn-lg"
-              onClick={handleConfirmAvatar}
-            >
-              Confirm
-            </Button>
+
+            <div className="userTwoButtonGrid mt-3">
+              <Button
+                className="btn-danger"
+                onClick={() => {
+                  setUploaded("");
+                }}
+              >
+                Reject
+              </Button>
+
+              <Button className="defaultAppColor" onClick={handleConfirmAvatar}>
+                Confirm
+              </Button>
+            </div>
           </Modal.Body>
         </Modal>
       </>

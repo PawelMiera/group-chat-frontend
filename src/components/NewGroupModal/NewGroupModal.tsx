@@ -2,29 +2,30 @@ import Modal from "react-bootstrap/Modal";
 import "./NewGroupModal.css";
 import { Button } from "react-bootstrap";
 import { useState } from "react";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
-import { fetchCreateNewGroup } from "../../services/ApiChat";
 import { useCookies } from "react-cookie";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { downloadFile } from "../../common/utils";
+import { FrontendUrl } from "../../services/Urls";
+import useAxios from "../../utils/useAxios"
 
 interface Props {
   show: boolean;
   handleClosed: () => void;
-  newGroupCreated: (group_id: string) => void;
+  newGroupCreated: (group_uuid: string) => void;
 }
 
 export function NewGroupModal(props: Props) {
   const [groupName, setGroupName] = useState("");
   const [encryptionKey, setEncryptionKey] = useState("");
   const [error, setError] = useState("");
-  const authHeader = useAuthHeader();
   const [cookies, setCookie] = useCookies(["chatEncryption"]);
 
   const [groupInviteKey, setGroupInviteKey] = useState("");
   const [groupInviteUrl, setGroupInviteUrl] = useState("");
   const [urlCopied, setUrlCopied] = useState(false);
   const [keyCopied, setKeyCopied] = useState(false);
+
+  const api = useAxios();
 
   const closeModal = () => {
     setError("");
@@ -50,37 +51,28 @@ export function NewGroupModal(props: Props) {
   const createNewGroup = async () => {
     try {
       setError("");
-      const [ok, _, data] = await fetchCreateNewGroup(
-        authHeader || "",
-        groupName
-      );
 
-      if (ok) {
+      const response = await api.post("/chat/groups/new/", {"name": groupName})
+      console.log("response", response);
+      if (response.status === 201) {
         setError("");
         const curr_chat_encryption = cookies.chatEncryption;
 
-        if (curr_chat_encryption != null && curr_chat_encryption != "") {
-          curr_chat_encryption["chatEncryption"].push({
-            group_id: data["group_id"],
+        if (curr_chat_encryption != null && typeof curr_chat_encryption != "undefined") {
+          curr_chat_encryption.push({
+            group_uuid: response.data["uuid"],
             key: encryptionKey,
           });
           setCookie("chatEncryption", curr_chat_encryption);
         } else {
-          const curr_chat_encryption = {
-            chatEncryption: [
-              { group_id: data["group_id"], key: encryptionKey },
-            ],
-          };
+          const curr_chat_encryption = [{ group_uuid: response.data["uuid"], key: encryptionKey }];
           setCookie("chatEncryption", curr_chat_encryption);
         }
 
-        setGroupInviteKey(data["group_id"] + ":" + encryptionKey);
-        setGroupInviteUrl(
-          window.location.href +
-            `?group_id=${data["group_id"]}&key=${encryptionKey}`
-        );
+        setGroupInviteKey(response.data["uuid"] + ":" + encryptionKey);
+        setGroupInviteUrl(FrontendUrl + "/join/" + `?uuid=${response.data["uuid"]}&key=${encryptionKey}`);
 
-        props.newGroupCreated(data["group_id"]);
+        props.newGroupCreated(response.data["uuid"]);
       } else {
         setError("Failed to create group");
       }

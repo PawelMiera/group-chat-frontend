@@ -3,40 +3,26 @@ import "./App.css";
 import { LoginPage } from "./pages/LoginPage";
 import { ChatPage } from "./pages/ChatPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import AuthProvider from 'react-auth-kit';
-import createStore from 'react-auth-kit/createStore';
-import refreshToken from "./services/RefreshTokens"
-import RequireAuth from '@auth-kit/react-router/RequireAuth'
-import { CookiesProvider } from 'react-cookie'
+import { CookiesProvider } from "react-cookie";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
-
-
-  const store = createStore({
-    authName:'_auth',
-    authType:'cookie',
-    cookieDomain: window.location.hostname,
-    cookieSecure: false,
-    refresh: refreshToken,
-  });
-
-
   return (
-    <CookiesProvider>
-      <AuthProvider store={store}>
+    <CookiesProvider defaultSetOptions={{path:"/"}}>
         <Router>
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/chat" element={
-              <RequireAuth fallbackPath="/login/">
-                <ChatPage />
-              </RequireAuth>
-              } />
-            <Route path="/*" element={<LoginPage />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              {/* <Route path="/chat" element={
+                <PrivateRoute> 
+                  <ChatPage/> 
+                </PrivateRoute>}/> */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/*" element={<LoginPage />} />
+            </Routes>
+          </AuthProvider>
         </Router>
-      </AuthProvider>
     </CookiesProvider>
   );
 }

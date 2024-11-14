@@ -2,18 +2,25 @@ import Login from "../components/Login/Login";
 import NavBar from "../components/Navbar/NavBar";
 import "./LoginPage.css"
 import { useNavigate } from "react-router-dom";
-import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated'
 import { useEffect } from "react";
+import { useContext } from "react";
+import AuthContext from "../context/AuthContext";
 
 export const LoginPage = () => {
   let navigate = useNavigate();
-  const isAuthenticated = useIsAuthenticated()
+  const { isAuthenticated } = useContext(AuthContext);
+
 
   useEffect(() => {
-
-      if(isAuthenticated){
-          navigate("/chat/")
+    const startup = async () => {
+      const authenticated = await isAuthenticated();
+      if (authenticated) {
+        navigate("/chat");
+        return;
       }
+    }
+
+    startup();
 
   }, []);
 

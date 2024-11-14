@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000/api";
+import {ApiUrl} from "./Urls";
 
 
 export let fetchRegister = async (username: string, password: string) => {
@@ -9,7 +9,7 @@ export let fetchRegister = async (username: string, password: string) => {
         body: JSON.stringify({"username": username, "password": password}),
     };
 
-    const response = await fetch(`${API_BASE_URL}/register/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/register/`, requestOptions);
 
     const data = await response.json();
     
@@ -25,12 +25,28 @@ export let fetchRefreshToken = async (refresh: string) => {
         body: JSON.stringify({"refresh": refresh}),
     };
 
-    const response = await fetch(`${API_BASE_URL}/token/refresh/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/token/refresh/`, requestOptions);
+
+    const data = await response.json();
+    
+    return [response.ok, response.status, data];
+};
+
+
+export let fetchRotateToken = async (authHeader: string) => {
+
+    const requestOptions = {
+        method: 'GET',
+        headers: {'Content-type': 'application/json', "Authorization": authHeader},
+    };
+
+    const response = await fetch(`${ApiUrl}/token/rotate/`, requestOptions);
 
     const data = await response.json();
     
     return [response.ok, response.status, data];
 }; 
+
 
 
 export let fetchGetUser = async (authHeader: string) => {
@@ -40,7 +56,7 @@ export let fetchGetUser = async (authHeader: string) => {
         headers: {'Content-type': 'application/json', "Authorization": authHeader},
     };
 
-    const response = await fetch(`${API_BASE_URL}/user/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/user/`, requestOptions);
 
     const data = await response.json();
     
@@ -56,7 +72,7 @@ export let fetchUpdateUser = async (authHeader: string, body_data: any) => {
         body: JSON.stringify(body_data)
     };
 
-    const response = await fetch(`${API_BASE_URL}/user/`, requestOptions);
+    const response = await fetch(`${ApiUrl}/user/`, requestOptions);
 
     const data = await response.json();
     

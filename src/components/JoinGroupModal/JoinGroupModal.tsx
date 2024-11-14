@@ -2,15 +2,14 @@ import Modal from "react-bootstrap/Modal";
 import "./JoinGroupModal.css";
 import { Button } from "react-bootstrap";
 import { useState } from "react";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
-import { fetchJoinGroup } from "../../services/ApiChat";
 import { useCookies } from "react-cookie";
 import { downloadFile } from "../../common/utils";
+import useAxios from "../../utils/useAxios"
 
 interface Props {
   show: boolean;
   handleClosed: () => void;
-  newGroupJoined: (group_id: string) => void;
+  newGroupJoined: (group_uuid: string) => void;
 }
 
 export function JoinGroupModal(props: Props) {
@@ -18,49 +17,45 @@ export function JoinGroupModal(props: Props) {
   const [groupName, setGroupName] = useState("");
   const [error, setError] = useState("");
   const [joinedGroup, setJoinedGroup] = useState(false);
-  const authHeader = useAuthHeader();
   const [cookies, setCookie] = useCookies(["chatEncryption"]);
+  const api = useAxios();
 
   const joinGroup = async () => {
     try {
       const group_data = groupKey.split(":");
 
-      const group_id = group_data[0];
+      const group_uuid = group_data[0];
       const encryptionKey = group_data[1];
 
-      const [ok, _, data] = await fetchJoinGroup(authHeader || "", group_id);
-      console.log(data);
+      const response = await api.post('/chat/groups/join/', {"uuid": group_uuid});
 
-      if (ok) {
-
-
+      if (response.status === 201) {
         const curr_chat_encryption = cookies.chatEncryption;
 
-        if (curr_chat_encryption != null && curr_chat_encryption != "") {
-          curr_chat_encryption["chatEncryption"].push({
-            group_id: group_id,
+        if (
+          curr_chat_encryption != null &&
+          typeof curr_chat_encryption != "undefined"
+        ) {
+          curr_chat_encryption.push({
+            group_uuid: group_uuid,
             key: encryptionKey,
           });
           setCookie("chatEncryption", curr_chat_encryption);
         } else {
-          const curr_chat_encryption = {
-            chatEncryption: [
-              { group_id: data["group_id"], key: encryptionKey },
-            ],
-          };
+          const curr_chat_encryption = [
+            { group_uuid: response.data["uuid"], key: encryptionKey },
+          ];
           setCookie("chatEncryption", curr_chat_encryption);
         }
 
         setError("");
         setJoinedGroup(true);
-        setGroupName(data["group_name"]);
+        setGroupName(response.data["name"]);
 
-        props.newGroupJoined(data["group_id"]);
-
+        props.newGroupJoined(response.data["uuid"]);
       } else {
         setError("Failed to join group");
-        console.log(data);
-
+        console.log(response.data);
       }
     } catch (error) {
       setError("Failed to join group");
@@ -82,8 +77,7 @@ export function JoinGroupModal(props: Props) {
     );
   };
 
-  if(joinedGroup)
-  {
+  if (joinedGroup) {
     return (
       <>
         <Modal
@@ -94,7 +88,9 @@ export function JoinGroupModal(props: Props) {
           size="lg"
         >
           <Modal.Header closeButton>
-            <Modal.Title className="text-success">{"Joined Group: " + groupName}</Modal.Title>
+            <Modal.Title className="text-success">
+              {"Joined Group: " + groupName}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column">
             <div className="mt-3">
@@ -103,7 +99,7 @@ export function JoinGroupModal(props: Props) {
               It will be stored only in your browser memory.
               <br /> You can download config file later use!
             </div>
-  
+
             <Button
               className="defaultAppColor mt-3 mx-auto d-inline-flex btn-lg"
               onClick={downloadEncryptionKeys}
@@ -114,9 +110,7 @@ export function JoinGroupModal(props: Props) {
         </Modal>
       </>
     );
-  }
-  else
-  {
+  } else {
     return (
       <>
         <Modal
@@ -137,14 +131,14 @@ export function JoinGroupModal(props: Props) {
               onChange={(e) => setGroupKey(e.target.value)}
             ></input>
             <div className="mt-3 text-danger">{error}</div>
-  
+
             <div className="mt-3">
               We don't save encryption key on our servers.
               <br />
               It will be stored only in your browser memory.
               <br /> You can download config file later use!
             </div>
-  
+
             <Button
               className="defaultAppColor mt-3 mx-auto d-inline-flex justify-content-center btn-lg"
               onClick={joinGroup}
@@ -156,6 +150,4 @@ export function JoinGroupModal(props: Props) {
       </>
     );
   }
-
-
 }

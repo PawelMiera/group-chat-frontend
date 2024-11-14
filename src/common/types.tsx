@@ -42,3 +42,9 @@ export interface AllGroupsInterface {
     messages: GroupMessagesInterface[];
     curr_user: string;
 }
+
+
+export interface GroupEncryptionInterface {
+    group_uuid: string;
+    key: string;
+}

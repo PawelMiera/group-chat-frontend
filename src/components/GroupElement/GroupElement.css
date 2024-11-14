@@ -26,8 +26,6 @@
 
 .groupText{
     font-size: small;
-    white-space: nowrap;
-    overflow: hidden;
 }
 
 
@@ -52,5 +50,4 @@
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    border: 1px white solid;
 }
