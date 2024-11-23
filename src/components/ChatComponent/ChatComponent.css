@@ -3,6 +3,7 @@
     flex-direction: column;
     justify-content: end;
     padding: 30px;
+    padding-top: 10px;
     background-color: var(--col-containers);
     border-radius: 3vh;
     overflow-y: scroll;
@@ -17,7 +18,7 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
     display: flex;
-    flex-direction: column;
+    flex-direction: column;    
 }
 
 .sendMessageDiv {
@@ -25,6 +26,23 @@
     position: sticky;
     gap: 10px;
     bottom: 0;
+}
+
+.groupNameDiv {
+    position: sticky;
+    margin-bottom: auto;    
+    top: 0;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.groupTopIcon{
+    border-radius: 50%;
+    width: 50px;
 }
 
 .form-control {

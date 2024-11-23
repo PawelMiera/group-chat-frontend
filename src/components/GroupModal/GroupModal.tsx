@@ -14,14 +14,13 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { FrontendUrl } from "../../services/Urls";
 import useAxios from "../../utils/useAxios"
 
-import { fetchUpdateGroup, fetchDeleteGroup } from "../../services/ApiChat.tsx";
-
 interface Props {
   show: boolean;
   group: GroupInterface;
   handleClosed: () => void;
   onGroupUpdated: (new_group: GroupInterface) => void;
-  onGroupDeleted: (uuid: string, id: string) => void;
+  onGroupDeleted: (uuid: string, id: number) => void;
+  onEncryptionKeyUpdated: (enc_key: string, group_id: number) => void;
 }
 
 export function GroupModal(props: Props) {
@@ -40,6 +39,11 @@ export function GroupModal(props: Props) {
   const [urlCopied, setUrlCopied] = useState(false);
   const [keyCopied, setKeyCopied] = useState(false);
   const [deleteClicked, setDeleteClicked] = useState(false);
+  const [leaveClicked, setLeaveClicked] = useState(false);
+  const [nameValid, setNameValid] = useState(true);
+  const [encValid, setEncValid] = useState(true);
+  const [errorName, setErrorName] = useState("");
+  const [errorEnc, setErrorEnc] = useState("");
   const api = useAxios();
 
   let curr_enc_key = "";
@@ -63,87 +67,112 @@ export function GroupModal(props: Props) {
     let out_enc_key = "";
     if (typeof curr_enc_key != "undefined") {
       out_enc_key = curr_enc_key;
+      setGroupInviteKey(props.group.uuid + ":" + out_enc_key);
+      setGroupInviteUrl(
+        FrontendUrl + "/join/" + `?uuid=${props.group.uuid}&key=${out_enc_key}`
+      );
+      setEncKey(out_enc_key);
     }
-
-    setGroupInviteKey(props.group.uuid + ":" + out_enc_key);
-    setGroupInviteUrl(
-      FrontendUrl + "/join/" + `?uuid=${props.group.uuid}&key=${out_enc_key}`
-    );
-    setEncKey(out_enc_key);
   }, [curr_enc_key, props.group.uuid]);
 
   useEffect(() => {
-    setGroupName(props.group.name);
+    if (typeof props.group.name != "undefined") {
+      setGroupName(props.group.name);
+    }
   }, [props.group.name]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      let out_enc_key = "";
-      if (typeof curr_enc_key != "undefined") {
-        out_enc_key = curr_enc_key;
-      }
 
-      if (out_enc_key != encKey) {
-        const curr_chat_encryption = cookies.chatEncryption;
+      var re_enc = /^[a-zA-Z0-9!@#$%^&*()<>,.]+$/;
+      if (encKey == "" || re_enc.test(encKey))
+      {
+        setEncValid(true);
+        setErrorEnc("");
+        let last_enc_key = "";
+        if (typeof curr_enc_key != "undefined") {
+          last_enc_key = curr_enc_key;
+        }
+        if (last_enc_key != encKey) {
+          const curr_chat_encryption = cookies.chatEncryption;
 
-        if (curr_chat_encryption != null && curr_chat_encryption != "") {
-          const cookie_array: GroupEncryptionInterface[] =
-            curr_chat_encryption["chatEncryption"];
-          const index = cookie_array.findIndex(
-            (enc) => enc["group_uuid"] === props.group.uuid
-          );
+          if (curr_chat_encryption != null && curr_chat_encryption != "") {
 
-          if (index != -1) {
-            curr_chat_encryption["chatEncryption"][index] = {
-              group_uuid: props.group.uuid,
-              key: encKey,
-            };
+            const index = cookie_array.findIndex(
+              (enc) => enc["group_uuid"] === props.group.uuid
+            );
+
+            if (index != -1) {
+              curr_chat_encryption[index] = {
+                group_uuid: props.group.uuid,
+                key: encKey,
+              };
+            } else {
+              curr_chat_encryption.push({
+                group_uuid: props.group.uuid,
+                key: encKey,
+              });
+            }
+
+            setCookie("chatEncryption", curr_chat_encryption);
           } else {
-            curr_chat_encryption["chatEncryption"].push({
-              group_uuid: props.group.uuid,
-              key: encKey,
-            });
+            const curr_chat_encryption = [{ group_uuid: props.group.uuid, key: encKey }];
+            setCookie("chatEncryption", curr_chat_encryption);
           }
 
-          setCookie("chatEncryption", curr_chat_encryption);
-        } else {
-          const curr_chat_encryption = {
-            chatEncryption: [{ group_uuid: props.group.uuid, key: encKey }],
-          };
-          setCookie("chatEncryption", curr_chat_encryption);
+          props.onEncryptionKeyUpdated(encKey, props.group.id);
+
         }
+
       }
-    }, 2000);
+      else
+      {
+        setEncValid(false);
+        setErrorEnc("Group Encryption Key can only contain A-Z, a-z, 0-9 and !@#$%^&*()<>,.");
+      }
+
+    }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
   }, [encKey]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (props.group.name != groupName) {
 
-        api.patch('/chat/groups/', {name: groupName,uuid: props.group.uuid});
+      var re = /^[a-zA-Z0-9\s]+$/;
+      if (re.test(groupName) && groupName != "")
+      {
+        setNameValid(true);
+        setErrorName("");
+        if (props.group.name != groupName && props.group.uuid != "") {
+          api.patch('/chat/groups/', {name: groupName,uuid: props.group.uuid});
 
-        const new_group: GroupInterface = {
-          name: groupName,
-          avatar: props.group.avatar,
-          uuid: props.group.uuid,
-          last_msg: props.group.last_msg,
-          id: props.group.id,
-          members: props.group.members,
-        };
+          const new_group: GroupInterface = {
+            name: groupName,
+            avatar: props.group.avatar,
+            uuid: props.group.uuid,
+            last_activity: props.group.last_activity,
+            id: props.group.id,
+            members: props.group.members,
+          };
 
-        props.onGroupUpdated(new_group);
+          props.onGroupUpdated(new_group);
+        }
       }
-    }, 2000);
+      else
+      {
+        setNameValid(false);
+        setErrorName("Group name can only contain A-Z, a-z, 0-9 and spaces");
+      }
+    }, 1000);
 
     return () => clearTimeout(delayDebounceFn);
   }, [groupName]);
 
   const handleConfirmAvatar = () => {
-    if (preparedImageRef.current != null) {
-      const new_avatar = preparedImageRef.current.getImage().toDataURL();
+    if (preparedImageRef.current != null && props.group.uuid != "") {
 
+      const new_avatar = preparedImageRef.current.getImage().toDataURL();
 
       api.patch('/chat/groups/', {avatar: new_avatar,uuid: props.group.uuid});
 
@@ -151,7 +180,7 @@ export function GroupModal(props: Props) {
         name: props.group.name,
         avatar: new_avatar,
         uuid: props.group.uuid,
-        last_msg: props.group.last_msg,
+        last_activity: props.group.last_activity,
         id: props.group.id,
         members: props.group.members,
       };
@@ -211,9 +240,20 @@ export function GroupModal(props: Props) {
 
   const handleDeleteGroup = async () => {
 
-    const response = await api.post('/chat/groups/', {"uuid": props.group.uuid});
+    const response = await api.delete(`/chat/groups/?uuid=${props.group.uuid}`);
+    
+    if (response.status === 200) {
+      props.onGroupDeleted(props.group.uuid, props.group.id);
+      closeModal();
+    }
+  };
 
-    if (response.status === 201) {
+
+  const handleLeaveGroup = async () => {
+
+    const response = await api.post('/chat/groups/leave/', {"uuid": props.group.uuid});
+
+    if (response.status === 200) {
       props.onGroupDeleted(props.group.uuid, props.group.id);
       closeModal();
     }
@@ -223,6 +263,7 @@ export function GroupModal(props: Props) {
     setUploaded("");
     setEncKeyDisabled(true);
     setDeleteClicked(false);
+    setLeaveClicked(false);
     props.handleClosed();
   };
 
@@ -263,7 +304,48 @@ export function GroupModal(props: Props) {
         </Modal>
       </>
     );
-  } else if (uploaded != "") {
+  } else if (leaveClicked) {
+    return (
+      <>
+        <Modal
+          show={props.show}
+          onHide={closeModal}
+          centered
+          className="my-modal"
+        >
+          <Modal.Header className="align-items-start" closeButton>
+            <div className="d-flex flex-column">
+              <Modal.Title className="text-break">
+                {props.group.name}
+              </Modal.Title>
+              <div className="small text-break">{props.group.uuid}</div>
+            </div>
+          </Modal.Header>
+          <Modal.Body className="d-flex flex-column align-items-center">
+            <h3 className="mt-3">Do you want to leave the group?</h3>
+            <h5 className="mt-1">All your messages will be deleted!</h5>
+
+            <div className="groupButtonGrid mt-3">
+              <Button className="btn-danger" onClick={handleLeaveGroup}>
+                Yes
+              </Button>
+              <Button
+                className="defaultAppColor"
+                onClick={() => {
+                  setLeaveClicked(false);
+                }}
+              >
+                No
+              </Button>
+            </div>
+          </Modal.Body>
+        </Modal>
+      </>
+    );
+  }
+  
+  
+  else if (uploaded != "") {
     return (
       <>
         <Modal
@@ -352,24 +434,26 @@ export function GroupModal(props: Props) {
 
             <input
               type="text"
-              className="form-control form-control-modal mt-1"
+              className={ nameValid ? "form-control form-control-modal mt-1 is-valid" : "form-control form-control-modal mt-1 is-invalid"}
               value={groupName}
               maxLength={50}
-              placeholder={props.group.name}
+              placeholder={groupName}
               onChange={(e) => setGroupName(e.target.value)}
             ></input>
+            <div className="mt-1 text-danger">{errorName}</div>
 
             <div className="align-self-start mt-3 ms-1">
               EncryptionKey - be carefull when changing
             </div>
 
+
             <div className="d-flex align-items-center justify-content-center inputEncKey">
               <input
                 type="text"
-                className="form-control form-control-modal mt-1"
+                className={ encValid ? "form-control form-control-modal mt-1 is-valid" : "form-control form-control-modal mt-1 is-invalid"}
                 value={encKey}
                 disabled={encKeyDisabled}
-                maxLength={50}
+                maxLength={24}
                 placeholder={encKey}
                 onChange={(e) => setEncKey(e.target.value)}
               ></input>
@@ -386,6 +470,8 @@ export function GroupModal(props: Props) {
                 />
               </div>
             </div>
+            <div className="mt-1 text-danger">{errorEnc}</div>
+
           </Modal.Body>
 
           <Modal.Footer className="d-flex flex-column align-items-center">
@@ -435,7 +521,11 @@ export function GroupModal(props: Props) {
             </div>
 
             <div className="groupButtonGrid mt-3">
-              <Button className="defaultAppColor">Edit Members</Button>
+              <Button className="defaultAppColor"
+                onClick={() => {
+                setLeaveClicked(true);
+              }}
+              >Leave Group</Button>
               <Button
                 className="btn-danger"
                 onClick={() => {

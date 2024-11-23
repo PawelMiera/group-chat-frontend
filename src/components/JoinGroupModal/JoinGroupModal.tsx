@@ -1,15 +1,16 @@
 import Modal from "react-bootstrap/Modal";
 import "./JoinGroupModal.css";
 import { Button } from "react-bootstrap";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import { downloadFile } from "../../common/utils";
-import useAxios from "../../utils/useAxios"
+import useAxios from "../../utils/useAxios";
 
 interface Props {
   show: boolean;
+  groupToJoin: string;
   handleClosed: () => void;
-  newGroupJoined: (group_uuid: string) => void;
+  newGroupJoined: (group_uuid: string, enc_key: string) => void;
 }
 
 export function JoinGroupModal(props: Props) {
@@ -20,6 +21,39 @@ export function JoinGroupModal(props: Props) {
   const [cookies, setCookie] = useCookies(["chatEncryption"]);
   const api = useAxios();
 
+  const handleJoinGroup = async (group_uuid: string, encryptionKey: string) => {
+    const response = await api.post("/chat/groups/join/", { uuid: group_uuid });
+
+    if (response.status === 200) {
+      const curr_chat_encryption = cookies.chatEncryption;
+
+      if (
+        curr_chat_encryption != null &&
+        typeof curr_chat_encryption != "undefined"
+      ) {
+        curr_chat_encryption.push({
+          group_uuid: group_uuid,
+          key: encryptionKey,
+        });
+        setCookie("chatEncryption", curr_chat_encryption);
+      } else {
+        const curr_chat_encryption = [
+          { group_uuid: response.data["uuid"], key: encryptionKey },
+        ];
+        setCookie("chatEncryption", curr_chat_encryption);
+      }
+
+      setError("");
+      setJoinedGroup(true);
+      setGroupName(response.data["name"]);
+
+      props.newGroupJoined(response.data["uuid"], encryptionKey);
+    } else {
+      setError("Failed to join group");
+      console.log(response.data);
+    }
+  };
+
   const joinGroup = async () => {
     try {
       const group_data = groupKey.split(":");
@@ -27,36 +61,7 @@ export function JoinGroupModal(props: Props) {
       const group_uuid = group_data[0];
       const encryptionKey = group_data[1];
 
-      const response = await api.post('/chat/groups/join/', {"uuid": group_uuid});
-
-      if (response.status === 201) {
-        const curr_chat_encryption = cookies.chatEncryption;
-
-        if (
-          curr_chat_encryption != null &&
-          typeof curr_chat_encryption != "undefined"
-        ) {
-          curr_chat_encryption.push({
-            group_uuid: group_uuid,
-            key: encryptionKey,
-          });
-          setCookie("chatEncryption", curr_chat_encryption);
-        } else {
-          const curr_chat_encryption = [
-            { group_uuid: response.data["uuid"], key: encryptionKey },
-          ];
-          setCookie("chatEncryption", curr_chat_encryption);
-        }
-
-        setError("");
-        setJoinedGroup(true);
-        setGroupName(response.data["name"]);
-
-        props.newGroupJoined(response.data["uuid"]);
-      } else {
-        setError("Failed to join group");
-        console.log(response.data);
-      }
+      await handleJoinGroup(group_uuid, encryptionKey);
     } catch (error) {
       setError("Failed to join group");
     }
@@ -76,6 +81,28 @@ export function JoinGroupModal(props: Props) {
       JSON.stringify(cookies.chatEncryption, null, 2)
     );
   };
+
+
+  useEffect(() => {
+    if (props.groupToJoin != "") {
+      console.log("Joining group from url");
+        try {
+          const parsed_join = JSON.parse(props.groupToJoin);
+          if (
+            parsed_join.hasOwnProperty("uuid") &&
+            parsed_join.hasOwnProperty("key")
+          ) {
+            localStorage.removeItem("joinGroup");
+            handleJoinGroup(parsed_join["uuid"], parsed_join["key"]);
+          }
+        } catch (error) {
+          console.log("Failed to join group");
+          setError("Failed to join group");
+        }
+    }
+  }, [props.groupToJoin]);
+
+
 
   if (joinedGroup) {
     return (

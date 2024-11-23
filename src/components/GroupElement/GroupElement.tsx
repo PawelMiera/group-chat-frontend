@@ -6,16 +6,17 @@ interface GroupElementProps {
   last_message: string;
   last_author: string | undefined;
   is_selected: boolean;
-  id: string;
+  id: number;
   avatar: string;
-  on_click: (arg: string) => void;
-  on_settings_click: (arg: string) => void;
+  on_click: (arg: number) => void;
+  on_settings_click: (arg: number) => void;
 }
 
 const GroupElement = (props: GroupElementProps) => {
   let message_text = "";
   if (props.last_author != null && props.last_author != "") {
-    message_text = props.last_author + ": " + props.last_message;
+    const author_reduced = props.last_author.length > 10 ? props.last_author.substring(0,10) + "... " : props.last_author;
+    message_text = author_reduced + ": " + props.last_message;
   }
 
   return (

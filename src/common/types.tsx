@@ -1,19 +1,20 @@
 
 export interface MessageInterface {
     msg: string;
-    author: string;
+    author: number;
     created: string;
 }
 
 export interface GroupMessagesInterface {
     messages: MessageInterface[];
-    group_id: string;
+    group_id: number;
 }
 
 export interface GroupInterface {
     name: string;
-    last_msg: MessageInterface;
-    id: string;
+    // last_msg: MessageInterface;
+    last_activity: string;
+    id: number;
     uuid: string;
     members: string[];
     avatar: string;
@@ -23,7 +24,7 @@ export interface GroupInterface {
 export interface UserInterface {
     name: string;
     date_joined: string;
-    id: string;
+    id: number;
     avatar: string;
 }
 
@@ -31,16 +32,18 @@ export interface CurrUserInterface {
     username: string;
     nickname: string;
     date_joined: string;
-    id: string;
+    id: number;
     avatar: string;
+    anonymous: boolean;
 }
 
 
 export interface AllGroupsInterface {
+    curr_user: CurrUserInterface;
     groups: GroupInterface[];
     users: UserInterface[];
     messages: GroupMessagesInterface[];
-    curr_user: string;
+    server_id: number;
 }
 
 

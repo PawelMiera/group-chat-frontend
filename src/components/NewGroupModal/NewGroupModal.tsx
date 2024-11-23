@@ -11,7 +11,7 @@ import useAxios from "../../utils/useAxios"
 interface Props {
   show: boolean;
   handleClosed: () => void;
-  newGroupCreated: (group_uuid: string) => void;
+  newGroupCreated: (group_uuid: string, enc_key: string) => void;
 }
 
 export function NewGroupModal(props: Props) {
@@ -31,6 +31,7 @@ export function NewGroupModal(props: Props) {
     setError("");
     setEncryptionKey("");
     setGroupInviteKey("");
+    setGroupName("");
     props.handleClosed();
   };
 
@@ -48,12 +49,25 @@ export function NewGroupModal(props: Props) {
     setEncryptionKey(newPassword);
   };
 
-  const createNewGroup = async () => {
+  const createNewGroup = async (event: React.SyntheticEvent) => {
     try {
+      event.preventDefault();
       setError("");
 
+      var re = /^[a-zA-Z0-9\s]+$/;
+      var re_enc = /^[a-zA-Z0-9!@#$%^&*()<>,.]+$/;
+      if (!re.test(groupName))
+      {
+        setError("Group name can only contain A-Z, a-z, 0-9 and spaces");
+        return;
+      }
+      if (encryptionKey != "" && !re_enc.test(encryptionKey))
+      {
+        setError("Group Encryption Key can only contain A-Z, a-z, 0-9 and !@#$%^&*()<>,.");
+        return;
+      }
+
       const response = await api.post("/chat/groups/new/", {"name": groupName})
-      console.log("response", response);
       if (response.status === 201) {
         setError("");
         const curr_chat_encryption = cookies.chatEncryption;
@@ -72,12 +86,13 @@ export function NewGroupModal(props: Props) {
         setGroupInviteKey(response.data["uuid"] + ":" + encryptionKey);
         setGroupInviteUrl(FrontendUrl + "/join/" + `?uuid=${response.data["uuid"]}&key=${encryptionKey}`);
 
-        props.newGroupCreated(response.data["uuid"]);
+        props.newGroupCreated(response.data["uuid"], curr_chat_encryption);
       } else {
         setError("Failed to create group");
       }
     } catch (error) {
       setError("Failed to create group");
+      console.log(error);
     }
   };
 
@@ -121,54 +136,60 @@ export function NewGroupModal(props: Props) {
             <Modal.Title>Create New Group</Modal.Title>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column">
-            <div className="inputGrid">
-              <div>Group Name:</div>
-              <input
-                className="form-control form-control-modal"
-                maxLength={50}
-                onChange={(e) => setGroupName(e.target.value)}
-              ></input>
-
-              <div>Group Encryption Key:</div>
-              <div className="input-group">
+            <form className="form-check">
+              <div className="inputGrid">
+                <div>Group Name:</div>
                 <input
-                  type="text"
                   className="form-control form-control-modal"
-                  value={encryptionKey}
-                  maxLength={24}
-                  onChange={(e) => setEncryptionKey(e.target.value)}
+                  maxLength={50}
+                  required
+                  pattern="[A-Za-z0-9]"
+                  onChange={(e) => setGroupName(e.target.value)}
                 ></input>
-                <div className="input-group-append">
-                  <button
-                    className="btn btn-outline-secondary btn-lg"
-                    type="button"
-                    title="Refresh"
-                    onClick={generateEncryptionKey}
-                  >
-                    ↻
-                  </button>
+
+                <div>Group Encryption Key:</div>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    className="form-control form-control-modal"
+                    value={encryptionKey}
+                    maxLength={24}
+                    onChange={(e) => setEncryptionKey(e.target.value)}
+                    pattern="[A-Za-z0-9]"
+                  ></input>
+                  <div className="input-group-append">
+                    <button
+                      className="btn btn-outline-secondary btn-lg"
+                      type="button"
+                      title="Refresh"
+                      onClick={generateEncryptionKey}
+                    >
+                      ↻
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-3 text-danger">{error}</div>
+              <div className="mt-3 text-danger">{error}</div>
 
-            <div className="mt-3">
-              Leave <b>Group Encryption Key</b> empty for no message encryption
-            </div>
-            <div className="mt-3">
-              We don't save encryption key on our servers.
-              <br />
-              It will be stored only in your browser memory.
-              <br /> You can download config file later use!
-            </div>
+              <div className="mt-3">
+                Leave <b>Group Encryption Key</b> empty for no message encryption
+              </div>
+              <div className="mt-3">
+                We don't save encryption key on our servers.
+                <br />
+                It will be stored only in your browser memory.
+                <br /> You can download config file later use!
+              </div>
 
-            <Button
-              className="defaultAppColor mt-3 mx-auto d-inline-flex justify-content-center btn-lg"
-              onClick={createNewGroup}
-            >
-              Create Group
-            </Button>
+              <Button
+                className="defaultAppColor mt-3 mx-auto d-inline-flex justify-content-center btn-lg"
+                onClick={createNewGroup}
+                type="submit"
+              >
+                Create Group
+              </Button>
+            </form>
           </Modal.Body>
         </Modal>
       </>

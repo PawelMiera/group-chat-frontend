@@ -3,10 +3,12 @@ import {
   GroupInterface,
   UserInterface,
   CurrUserInterface,
+  GroupMessagesInterface,
+  MessageInterface
 } from "../../common/types.tsx";
 import "./GroupComponent.css";
 import GroupElement from "../GroupElement/GroupElement";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NewGroupModal } from "../NewGroupModal/NewGroupModal.tsx";
 import { JoinGroupModal } from "../JoinGroupModal/JoinGroupModal.tsx";
 import { UserModal } from "../UserModal/UserModal.tsx";
@@ -14,14 +16,16 @@ import { GroupModal } from "../GroupModal/GroupModal.tsx";
 
 interface GroupComponentProps {
   groups: GroupInterface[];
+  messages: GroupMessagesInterface[];
   users: UserInterface[];
   curr_user: CurrUserInterface;
-  selected_group: string;
-  onGroupSelected: (arg: string) => void;
-  onNewGroupCreated: (group_uuid: string) => void;
+  selected_group: number;
+  onGroupSelected: (group_id: number) => void;
+  onNewGroupCreated: (group_uuid: string, enc_key: string) => void;
   onUserUpdated: (new_user: CurrUserInterface) => void;
   onGroupUpdated: (new_group: GroupInterface) => void;
-  onGroupDeleted: (uuid: string, id: string) => void;
+  onGroupDeleted: (uuid: string, group_id: number) => void;
+  onEncryptionKeyUpdated: (enc_key: string, group_id: number) => void;
 }
 
 const ChatComponent = (props: GroupComponentProps) => {
@@ -29,32 +33,61 @@ const ChatComponent = (props: GroupComponentProps) => {
   const [showJoinGroupModal, setShowJoinGroupModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
-  const [settingsGroup, setSettingsGroup] = useState<GroupInterface>({
-    avatar: "",
-    id: "-1",
-    name: "",
-    uuid: "",
-    members: [],
-    last_msg: {
-      author: "",
-      msg: "",
-      created: "",
-    },
-  });
+  const [settingsGroup, setSettingsGroup] = useState<GroupInterface>(
+    {} as GroupInterface
+  );
+  const [groupToJoin, setGroupToJoin] = useState("");
 
-  const handleSettingsGroupClicked = (group_id: string) => {
-    const selected_group = props.groups.find((grp) => grp.id === group_id)
-    if (typeof(selected_group) != "undefined")
-    {
+  const handleSettingsGroupClicked = (group_id: number) => {
+    const selected_group = props.groups.find((grp) => grp.id === group_id);
+    if (typeof selected_group != "undefined") {
       setSettingsGroup(selected_group);
       setShowGroupModal(true);
     }
   };
 
-  const handleGroupUpdated = (new_group : GroupInterface) => {
-      setSettingsGroup(new_group);
-      props.onGroupUpdated(new_group)
+  const handleGroupUpdated = (new_group: GroupInterface) => {
+    setSettingsGroup(new_group);
+    props.onGroupUpdated(new_group);
+  };
+
+  let group_elements = [];
+  for(let group of props.groups)
+  {
+    let last_msg : MessageInterface = {author: -1, msg: "", created:""};
+    const curr_msgs = props.messages.find((msg: GroupMessagesInterface) => msg.group_id === group.id);
+    if (typeof curr_msgs != "undefined" && curr_msgs.messages.length > 0) {
+      last_msg = curr_msgs.messages[curr_msgs.messages.length -1];
+    }
+
+    group_elements.push(            
+    <GroupElement
+      id={group.id}
+      on_click={() => {
+        props.onGroupSelected(group.id);
+      }}
+      key={group.id}
+      group_name={group.name}
+      avatar={group.avatar}
+      last_message={last_msg.msg}
+      last_author={
+        props.users.find((user) => user.id === last_msg.author)
+          ?.name
+      }
+      is_selected={props.selected_group == group.id}
+      on_settings_click={handleSettingsGroupClicked}
+    ></GroupElement>);
   }
+
+  useEffect(() => {
+    const group_to_join_ls = localStorage.getItem("joinGroup");
+    if (group_to_join_ls != null && group_to_join_ls != "") {
+      setGroupToJoin(group_to_join_ls);
+      setShowJoinGroupModal(true);
+    } else {
+      localStorage.removeItem("joinGroup");
+    }
+  }, []);
 
   return (
     <>
@@ -67,6 +100,7 @@ const ChatComponent = (props: GroupComponentProps) => {
       ></NewGroupModal>
       <JoinGroupModal
         newGroupJoined={props.onNewGroupCreated}
+        groupToJoin={groupToJoin}
         handleClosed={() => {
           setShowJoinGroupModal(false);
         }}
@@ -85,6 +119,7 @@ const ChatComponent = (props: GroupComponentProps) => {
         show={showGroupModal}
         onGroupUpdated={handleGroupUpdated}
         onGroupDeleted={props.onGroupDeleted}
+        onEncryptionKeyUpdated={props.onEncryptionKeyUpdated}
         handleClosed={() => {
           setShowGroupModal(false);
         }}
@@ -102,7 +137,6 @@ const ChatComponent = (props: GroupComponentProps) => {
             </Button>
           </div>
           <div>
-
             <Button
               className="defaultAppColor"
               onClick={() => {
@@ -123,24 +157,7 @@ const ChatComponent = (props: GroupComponentProps) => {
           />
         </div>
         <div className="groupContainer">
-          {props.groups.map((value, index) => (
-            <GroupElement
-              id={value.id}
-              on_click={() => {
-                props.onGroupSelected(value.id);
-              }}
-              key={index}
-              group_name={value.name}
-              avatar={value.avatar}
-              last_message={value.last_msg.msg}
-              last_author={
-                props.users.find((user) => user.id === value.last_msg.author)
-                  ?.name
-              }
-              is_selected={props.selected_group == value.id}
-              on_settings_click={handleSettingsGroupClicked}
-            ></GroupElement>
-          ))}
+          {group_elements}
         </div>
       </div>
     </>

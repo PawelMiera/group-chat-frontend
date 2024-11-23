@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Form, Button } from "react-bootstrap";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
-import { fetchRegister } from "../../services/ApiUser";
+import { fetchRegister, fetchRegisterAnonymous } from "../../services/ApiUser";
 import { useContext } from "react";
 import AuthContext from "../../context/AuthContext";
 
@@ -40,26 +40,9 @@ const Login = () => {
         if (ok) {
           localStorage.setItem("username", email);
 
-          console.log("SIGN IN", result);
-
           signIn(result["access"], result["refresh"]);
 
           navigate("/chat/");
-          // if(signIn({
-          //   auth: {
-          //     token: result["access"],
-          //     type: "Bearer"
-          //   },
-          //   refresh: result["refresh"]
-          // })){
-          //   window.location.reload();
-          //   // navigate("/chat/");
-          // }
-          // else{
-          //   console.log("Sign in Error");
-          // }
-
-          // navigate("/chat/");
         } else {
           setErrors({ password: result.password, email: result.username });
         }
@@ -69,15 +52,29 @@ const Login = () => {
     }
   };
 
+
+  const handleAnonymous = async () => {
+    try {
+      const [ok, _, result] = await fetchRegisterAnonymous();
+      if (ok) {
+        signIn(result["access"], result["refresh"]);
+        navigate("/chat/");
+      } else {
+        setErrors({ password: result.password, email: result.username });
+      }
+    } catch (error) {
+      console.log("APi error:", error);
+    }
+  };
+
   return (
     <div className="login-wrapper">
       <div className="login-form-container">
         <h2 className="login-title mb-3 loginColWhite">Anonymous</h2>
         <Button
           variant="primary"
-          type="submit"
           className="login-button defaultAppColor"
-          onClick={() => navigate("/chat")}
+          onClick={handleAnonymous}
         >
           Enter anonymously
         </Button>

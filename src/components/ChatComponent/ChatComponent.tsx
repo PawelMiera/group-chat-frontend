@@ -1,25 +1,40 @@
 import { Button } from "react-bootstrap";
-import { MessageInterface, UserInterface, GroupInterface} from "../../common/types.tsx";
+import {
+  MessageInterface,
+  UserInterface,
+  GroupInterface,
+} from "../../common/types.tsx";
 import ChatBubble from "../ChatBubble/ChatBubble.tsx";
 import "./ChatComponent.css";
 import { useEffect, useRef, useState } from "react";
 import useAutosizeTextArea from "./useAutosizeTextArea";
+import throttle from "lodash.throttle";
 
 interface ChatComponentProps {
   messages: MessageInterface[];
-  user_id: string;
-  curr_group_id: string;
+  user_id: number;
+  curr_group_id: number;
+  server_id: number;
   newest_msg_index: number;
   users: UserInterface[];
+  groups: GroupInterface[];
   onSendClicked: (msg: string) => void;
+  onLoadOlderMessages: (group_id: number, len: number) => void;
   onResetNewestMessageIndex: () => void;
 }
-
 
 const ChatComponent = (props: ChatComponentProps) => {
   const [message, setMessage] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   useAutosizeTextArea(textAreaRef.current, message);
+  const [messageUpdated, setMessageUpdated] = useState(false);
+  const [lastScrollHeight, setLastScrollHeight] = useState(0);
+
+  const fetchOldMessages = () => {
+    props.onLoadOlderMessages(props.curr_group_id, props.messages.length);
+  };
+
+  const throttledFetchOldMessages = throttle(fetchOldMessages, 5000);
 
   const handleChange = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = evt.target?.value;
@@ -30,35 +45,60 @@ const ChatComponent = (props: ChatComponentProps) => {
     const temp = message;
     setMessage("");
     props.onSendClicked(temp);
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey)
-    {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       clearAndSend();
     }
-  }
+  };
 
-  const container = useRef<HTMLDivElement>(null)
+  const container = useRef<HTMLDivElement>(null);
 
   const Scroll = () => {
-    const { offsetHeight, scrollHeight, scrollTop } = container.current as HTMLDivElement
-
-    if(props.messages.length > 0 && props.messages[props.messages.length - 1].author == props.user_id)
+    const { offsetHeight, scrollHeight, scrollTop } =
+      container.current as HTMLDivElement;
+    if(messageUpdated)
     {
-      container.current?.scrollTo(0, scrollHeight)
+      setMessageUpdated(false);
+      const height_diff = scrollHeight - lastScrollHeight;
+      container.current?.scrollTo(0, height_diff - 30);
+
     }
-    else if (scrollHeight - offsetHeight - scrollTop < 700){
-      container.current?.scrollTo(0, scrollHeight)
+    else
+    {
+      if (
+        props.messages.length > 0 &&
+        props.messages[props.messages.length - 1].author == props.user_id
+      ) {
+        container.current?.scrollTo(0, scrollHeight);
+      } else if (scrollHeight - offsetHeight - scrollTop < 700) {
+        container.current?.scrollTo(0, scrollHeight);
+      }
     }
-  }
+
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLElement>) => {
+    if (e.currentTarget.scrollTop === 0) {
+      if (
+        props.messages.length > 0 &&
+        props.messages[0].author != props.server_id
+      ) {
+        const { scrollHeight } =
+        container.current as HTMLDivElement;
+        setMessageUpdated(true);
+        setLastScrollHeight(scrollHeight);
+        throttledFetchOldMessages();
+      }
+    }
+  };
 
 
   useEffect(() => {
-      Scroll();
-  }, [props.messages])
-
+    Scroll();
+  }, [props.messages]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -68,23 +108,40 @@ const ChatComponent = (props: ChatComponentProps) => {
     return () => clearTimeout(delayDebounceFn);
   }, [props.newest_msg_index]);
 
+  const curr_group = props.groups.find((grp) => grp.id === props.curr_group_id);
   return (
     <>
       <div className="chatComponentContainer">
-        <div className="chatContainer" id="chat-feed" ref={container}>
+        <div className="groupNameDiv">
+          <img
+            hidden={props.curr_group_id == -1}
+            src={curr_group?.avatar}
+            alt="Group icon"
+            className="groupTopIcon"
+          ></img>
+          <h3 className="ms-3 my-auto">{curr_group?.name}</h3>
+        </div>
+        <div
+          className="chatContainer"
+          id="chat-feed"
+          ref={container}
+          onScroll={handleScroll}
+        >
           {props.messages.map((item, index) => (
             <ChatBubble
-              name={item.author}
+              name={props.users.find((us) => us.id == item.author)?.name}
               avatar={props.users.find((us) => us.id == item.author)?.avatar}
               is_curr_user={props.user_id == item.author}
+              is_server={props.server_id == item.author}
               message_time={item.created}
               key={props.curr_group_id + "msg" + index}
-              start_animation={props.newest_msg_index != -1 && props.newest_msg_index == index}
+              start_animation={
+                props.newest_msg_index != -1 && props.newest_msg_index == index
+              }
             >
               {item.msg}
             </ChatBubble>
           ))}
-
         </div>
         <div className="sendMessageDiv">
           <textarea
@@ -98,7 +155,9 @@ const ChatComponent = (props: ChatComponentProps) => {
             onKeyDown={handleKeyDown}
           ></textarea>
           <div className="mt-auto">
-            <Button className="defaultAppColor" onClick={clearAndSend}>Send</Button>
+            <Button className="defaultAppColor" onClick={clearAndSend}>
+              Send
+            </Button>
           </div>
         </div>
       </div>
