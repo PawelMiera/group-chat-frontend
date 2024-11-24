@@ -5,10 +5,23 @@
     margin: auto;
   }
   
-  
   .login-form-container {
     width: 30vw;
     padding: 20px 20px 20px 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background-color: var(--col-dialog);
+  }
+
+  .login-wrapper-mobile {
+    display: flex;
+  }
+
+  .login-form-container-mobile {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     background-color: var(--col-dialog);

@@ -6,10 +6,11 @@ import { useCookies } from "react-cookie";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { downloadFile } from "../../common/utils";
 import { FrontendUrl } from "../../services/Urls";
-import useAxios from "../../utils/useAxios"
+import useAxios from "../../utils/useAxios";
 
 interface Props {
   show: boolean;
+  is_mobile: boolean;
   handleClosed: () => void;
   newGroupCreated: (group_uuid: string, enc_key: string) => void;
 }
@@ -56,35 +57,44 @@ export function NewGroupModal(props: Props) {
 
       var re = /^[a-zA-Z0-9\s]+$/;
       var re_enc = /^[a-zA-Z0-9!@#$%^&*()<>,.]+$/;
-      if (!re.test(groupName))
-      {
+      if (!re.test(groupName)) {
         setError("Group name can only contain A-Z, a-z, 0-9 and spaces");
         return;
       }
-      if (encryptionKey != "" && !re_enc.test(encryptionKey))
-      {
-        setError("Group Encryption Key can only contain A-Z, a-z, 0-9 and !@#$%^&*()<>,.");
+      if (encryptionKey != "" && !re_enc.test(encryptionKey)) {
+        setError(
+          "Group Encryption Key can only contain A-Z, a-z, 0-9 and !@#$%^&*()<>,."
+        );
         return;
       }
 
-      const response = await api.post("/chat/groups/new/", {"name": groupName})
+      const response = await api.post("/chat/groups/new/", { name: groupName });
       if (response.status === 201) {
         setError("");
         const curr_chat_encryption = cookies.chatEncryption;
 
-        if (curr_chat_encryption != null && typeof curr_chat_encryption != "undefined") {
+        if (
+          curr_chat_encryption != null &&
+          typeof curr_chat_encryption != "undefined"
+        ) {
           curr_chat_encryption.push({
             group_uuid: response.data["uuid"],
             key: encryptionKey,
           });
           setCookie("chatEncryption", curr_chat_encryption);
         } else {
-          const curr_chat_encryption = [{ group_uuid: response.data["uuid"], key: encryptionKey }];
+          const curr_chat_encryption = [
+            { group_uuid: response.data["uuid"], key: encryptionKey },
+          ];
           setCookie("chatEncryption", curr_chat_encryption);
         }
 
         setGroupInviteKey(response.data["uuid"] + ":" + encryptionKey);
-        setGroupInviteUrl(FrontendUrl + "/join/" + `?uuid=${response.data["uuid"]}&key=${encryptionKey}`);
+        setGroupInviteUrl(
+          FrontendUrl +
+            "/join/" +
+            `?uuid=${response.data["uuid"]}&key=${encryptionKey}`
+        );
 
         props.newGroupCreated(response.data["uuid"], curr_chat_encryption);
       } else {
@@ -116,11 +126,16 @@ export function NewGroupModal(props: Props) {
     }
   };
   const downloadEncryptionKeys = () => {
-    downloadFile(
-      "groopie_keys.json",
-      JSON.stringify(cookies.chatEncryption, null, 2)
-    );
+    if (typeof cookies.chatEncryption != undefined) {
+      downloadFile(
+        "groopie_keys.json",
+        JSON.stringify(cookies.chatEncryption, null, 2)
+      );
+    }
   };
+
+  const button_size = props.is_mobile ? "" : " btn-lg";
+  const text_size = props.is_mobile ? " small" : "";
 
   if (groupInviteKey == "") {
     return (
@@ -136,8 +151,10 @@ export function NewGroupModal(props: Props) {
             <Modal.Title>Create New Group</Modal.Title>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column">
-            <form className="form-check">
-              <div className="inputGrid">
+            <form className={"d-flex-inline flex-column"}>
+              <div
+                className={props.is_mobile ? "inputGridMobile" : "inputGrid"}
+              >
                 <div>Group Name:</div>
                 <input
                   className="form-control form-control-modal"
@@ -159,7 +176,7 @@ export function NewGroupModal(props: Props) {
                   ></input>
                   <div className="input-group-append">
                     <button
-                      className="btn btn-outline-secondary btn-lg"
+                      className={"btn btn-outline-secondary " + button_size}
                       type="button"
                       title="Refresh"
                       onClick={generateEncryptionKey}
@@ -172,24 +189,25 @@ export function NewGroupModal(props: Props) {
 
               <div className="mt-3 text-danger">{error}</div>
 
-              <div className="mt-3">
-                Leave <b>Group Encryption Key</b> empty for no message encryption
+              <div className={"mt-3" + text_size}>
+                Leave <b>Group Encryption Key</b> empty for no message
+                encryption
               </div>
-              <div className="mt-3">
+              <div className={"mt-3" + text_size}>
                 We don't save encryption key on our servers.
                 <br />
                 It will be stored only in your browser memory.
                 <br /> You can download config file later use!
               </div>
-
-              <Button
-                className="defaultAppColor mt-3 mx-auto d-inline-flex justify-content-center btn-lg"
-                onClick={createNewGroup}
-                type="submit"
-              >
-                Create Group
-              </Button>
             </form>
+
+            <Button
+              className={"defaultAppColor mt-3 mx-auto" + button_size}
+              onClick={createNewGroup}
+              type="submit"
+            >
+              Create Group
+            </Button>
           </Modal.Body>
         </Modal>
       </>
@@ -212,9 +230,13 @@ export function NewGroupModal(props: Props) {
           <Modal.Body className="d-flex flex-column">
             <div> Your friends can join with following key:</div>
             <div className="input-group mt-3 align-items-center">
-              <label className="form-control form-control-modal linkOutput me-1">
-                {" "}
-                {groupInviteKey}{" "}
+              <label
+                className={
+                  "form-control form-control-modal linkOutput me-1" +
+                  (props.is_mobile ? " labelMobile" : "")
+                }
+              >
+                {groupInviteKey}
               </label>
               <CopyToClipboard text={groupInviteKey} onCopy={handleKeyCopied}>
                 <div className="input-group-append">
@@ -232,8 +254,12 @@ export function NewGroupModal(props: Props) {
             <div className="mt-3"> Or send them this link:</div>
 
             <div className="input-group mt-3 align-items-center">
-              <label className="form-control form-control-modal linkOutput me-1">
-                {" "}
+              <label
+                className={
+                  "form-control form-control-modal linkOutput me-1 " +
+                  (props.is_mobile ? " labelMobile" : "")
+                }
+              >
                 {groupInviteUrl}
               </label>
 
@@ -251,7 +277,9 @@ export function NewGroupModal(props: Props) {
             </div>
 
             <Button
-              className="defaultAppColor mt-3 mx-auto d-inline-flex btn-lg"
+              className={
+                "defaultAppColor mt-3 mx-auto d-inline-flex " + button_size
+              }
               onClick={downloadEncryptionKeys}
             >
               Download encryption keys

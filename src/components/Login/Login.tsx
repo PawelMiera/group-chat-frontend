@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import "./Login.css";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,11 @@ import { fetchRegister, fetchRegisterAnonymous } from "../../services/ApiUser";
 import { useContext } from "react";
 import AuthContext from "../../context/AuthContext";
 
-const Login = () => {
+interface MobileProps {
+  is_mobile: boolean;
+}
+
+const Login = (props: MobileProps) => {
   const starting_email = localStorage.getItem("username");
   const [email, setEmail] = useState(
     starting_email != null ? starting_email : ""
@@ -67,61 +71,132 @@ const Login = () => {
     }
   };
 
-  return (
-    <div className="login-wrapper">
-      <div className="login-form-container">
-        <h2 className="login-title mb-3 loginColWhite">Anonymous</h2>
-        <Button
-          variant="primary"
-          className="login-button defaultAppColor"
-          onClick={handleAnonymous}
-        >
-          Enter anonymously
-        </Button>
-        <h2 className="login-title my-3 loginColWhite">Login / Register</h2>
-        <Form className="login-form">
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label className="loginColWhite">Email or Username</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter email or username"
-              autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              isInvalid={!!errors.email}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.email}
-            </Form.Control.Feedback>
-          </Form.Group>
+  if (props.is_mobile)
+  {
+    return (
+      <div className="login-wrapper-mobile">
+        <div className="login-form-container-mobile">
 
-          <Form.Group className="mb-3" controlId="formBasicPassword">
-            <Form.Label className="loginColWhite">Password</Form.Label>
-            <Form.Control
-              type="password"
-              autoComplete="new-password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              isInvalid={!!errors.password}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.password}
-            </Form.Control.Feedback>
-          </Form.Group>
+        <h2 className="login-title mt-2 mb-3 loginColWhite">Login / Register</h2>
+          <Form className="login-form">
+            <Form.Group className="mb-2" controlId="formBasicEmail">
+              <Form.Label className="loginColWhite">Email or Username</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter email or username"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                isInvalid={!!errors.email}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.email}
+              </Form.Control.Feedback>
+            </Form.Group>
+  
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label className="loginColWhite">Password</Form.Label>
+              <Form.Control
+                type="password"
+                autoComplete="new-password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                isInvalid={!!errors.password}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
+            </Form.Group>
+  
+            <Button
+              variant="primary"
+              type="submit"
+              className="login-button defaultAppColor"
+              onClick={handleSubmit}
+            >
+              Login / Register
+            </Button>
+          </Form>
 
+          <h2 className="login-title loginColWhite mt-3">Anonymous</h2>
+          <div className="login-title mb-3 loginColWhite small">Account will be deleted after one day from last use </div>
           <Button
             variant="primary"
-            type="submit"
             className="login-button defaultAppColor"
-            onClick={handleSubmit}
+            onClick={handleAnonymous}
           >
-            Login / Register
+            Enter anonymously
           </Button>
-        </Form>
+
+          <div className="h6 text-center align-self-bottom mt-auto">
+            Secure chat with browser-side encryption! <br />
+            Our servers can't read your messages!
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  else
+  {
+    return (
+      <div className="login-wrapper">
+        <div className="login-form-container">
+          <h2 className="login-title loginColWhite">Anonymous</h2>
+          <div className="login-title mb-3 loginColWhite">Account will be deleted after one day from last use </div>
+          <Button
+            variant="primary"
+            className="login-button defaultAppColor"
+            onClick={handleAnonymous}
+          >
+            Enter anonymously
+          </Button>
+          <h2 className="login-title my-3 loginColWhite">Login / Register</h2>
+          <Form className="login-form">
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label className="loginColWhite">Email or Username</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter email or username"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                isInvalid={!!errors.email}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.email}
+              </Form.Control.Feedback>
+            </Form.Group>
+  
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label className="loginColWhite">Password</Form.Label>
+              <Form.Control
+                type="password"
+                autoComplete="new-password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                isInvalid={!!errors.password}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
+            </Form.Group>
+  
+            <Button
+              variant="primary"
+              type="submit"
+              className="login-button defaultAppColor"
+              onClick={handleSubmit}
+            >
+              Login / Register
+            </Button>
+          </Form>
+        </div>
+      </div>
+    );
+  }
+
 };
 
 export default Login;

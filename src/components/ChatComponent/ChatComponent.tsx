@@ -9,8 +9,10 @@ import "./ChatComponent.css";
 import { useEffect, useRef, useState } from "react";
 import useAutosizeTextArea from "./useAutosizeTextArea";
 import throttle from "lodash.throttle";
+import BackIcon from "../../assets/icons/arrow_back.svg";
 
 interface ChatComponentProps {
+  is_mobile: boolean;
   messages: MessageInterface[];
   user_id: number;
   curr_group_id: number;
@@ -21,6 +23,7 @@ interface ChatComponentProps {
   onSendClicked: (msg: string) => void;
   onLoadOlderMessages: (group_id: number, len: number) => void;
   onResetNewestMessageIndex: () => void;
+  onMobileBackClicked: () => void;
 }
 
 const ChatComponent = (props: ChatComponentProps) => {
@@ -59,15 +62,11 @@ const ChatComponent = (props: ChatComponentProps) => {
   const Scroll = () => {
     const { offsetHeight, scrollHeight, scrollTop } =
       container.current as HTMLDivElement;
-    if(messageUpdated)
-    {
+    if (messageUpdated) {
       setMessageUpdated(false);
       const height_diff = scrollHeight - lastScrollHeight;
       container.current?.scrollTo(0, height_diff - 30);
-
-    }
-    else
-    {
+    } else {
       if (
         props.messages.length > 0 &&
         props.messages[props.messages.length - 1].author == props.user_id
@@ -77,7 +76,6 @@ const ChatComponent = (props: ChatComponentProps) => {
         container.current?.scrollTo(0, scrollHeight);
       }
     }
-
   };
 
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
@@ -86,15 +84,13 @@ const ChatComponent = (props: ChatComponentProps) => {
         props.messages.length > 0 &&
         props.messages[0].author != props.server_id
       ) {
-        const { scrollHeight } =
-        container.current as HTMLDivElement;
+        const { scrollHeight } = container.current as HTMLDivElement;
         setMessageUpdated(true);
         setLastScrollHeight(scrollHeight);
         throttledFetchOldMessages();
       }
     }
   };
-
 
   useEffect(() => {
     Scroll();
@@ -109,17 +105,35 @@ const ChatComponent = (props: ChatComponentProps) => {
   }, [props.newest_msg_index]);
 
   const curr_group = props.groups.find((grp) => grp.id === props.curr_group_id);
+
   return (
     <>
-      <div className="chatComponentContainer">
-        <div className="groupNameDiv">
+      <div
+        className={
+          props.is_mobile
+            ? "chatComponentContainerMobile"
+            : "chatComponentContainer"
+        }
+      >
+        <div
+          className={props.is_mobile ? "groupNameDivMobile" : "groupNameDiv"}
+        >
           <img
-            hidden={props.curr_group_id == -1}
-            src={curr_group?.avatar}
-            alt="Group icon"
-            className="groupTopIcon"
-          ></img>
-          <h3 className="ms-3 my-auto">{curr_group?.name}</h3>
+            hidden={!props.is_mobile}
+            className="backIcon"
+            src={BackIcon}
+            alt="Back icon"
+            onClick={() => props.onMobileBackClicked()}
+          />
+          <div className="d-flex justify-content-center">
+            <img
+              hidden={props.curr_group_id == -1}
+              src={curr_group?.avatar}
+              alt="Group icon"
+              className="groupTopIcon"
+            ></img>
+            <h3 className="ms-3 my-auto">{curr_group?.name}</h3>
+          </div>
         </div>
         <div
           className="chatContainer"

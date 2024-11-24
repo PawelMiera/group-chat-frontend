@@ -22,7 +22,13 @@ import { useCookies } from "react-cookie";
 
 import { decrypt, encrypt } from "../utils/Encryption";
 
-export const ChatPage = () => {
+import { WsUrl } from "../services/Urls";
+
+interface ChatPageProps {
+  is_mobile: boolean;
+}
+
+export const ChatPage = (props: ChatPageProps) => {
   const { accessToken, isAuthenticated } = useContext(AuthContext);
 
   const api = useAxios();
@@ -34,7 +40,7 @@ export const ChatPage = () => {
     nickname: "",
     username: "",
     date_joined: "",
-    anonymous: false
+    anonymous: false,
   });
   const [stateMessages, setStateMessages] = useState<GroupMessagesInterface[]>(
     []
@@ -47,6 +53,7 @@ export const ChatPage = () => {
   >([]);
   const [stateUsers, setStateUsers] = useState<UserInterface[]>([]);
   const [stateSelectedGroupId, setStateSelectedGroupId] = useState<number>(-1);
+  const [stateMobileGroupId, setStateMobileGroupId] = useState<number>(-1);
   const [stateNewestMessageIndex, setStateNewestMessageIndex] =
     useState<number>(-1);
   const [stateServerId, setStateServerId] = useState<number>(1);
@@ -490,6 +497,7 @@ export const ChatPage = () => {
 
   const handleGroupSelected = (group_id: number) => {
     setStateSelectedGroupId(group_id);
+    setStateMobileGroupId(group_id);
     const curr_messages = stateMessages.find(
       (message) => message.group_id === group_id
     )?.messages;
@@ -497,6 +505,10 @@ export const ChatPage = () => {
     if (typeof curr_messages != "undefined") {
       setStateDisplayedMessages(curr_messages);
     }
+  };
+
+  const handleMobileBackClicked = () => {
+    setStateMobileGroupId(-1);
   };
 
   const handleLoadOlderMessages = async (group_id: number, start: number) => {
@@ -581,6 +593,39 @@ export const ChatPage = () => {
     }
   };
 
+  const handleReloadEncryption = (new_enc: GroupEncryptionInterface[]) => {
+    const messages_copy = structuredClone(stateMessages);
+
+    for (let enc of new_enc) {
+      const curr_group = stateGroups.find((grp) => grp.uuid == enc.group_uuid);
+
+      if (typeof curr_group != "undefined") {
+        const index_enc = stateEncryptedMessages.findIndex(
+          (msgs) => msgs.group_id == curr_group.id
+        );
+
+        const index = messages_copy.findIndex(
+          (msgs) => msgs.group_id == curr_group.id
+        );
+
+        if (index_enc != -1 && index != -1) {
+          const decrypted_messages = decryptMessagesArrayWithKey(
+            stateEncryptedMessages[index_enc].messages,
+            stateServerId,
+            enc.key
+          );
+
+          messages_copy[index].messages = decrypted_messages;
+
+          if (stateSelectedGroupId == curr_group.id) {
+            setStateDisplayedMessages(messages_copy[index].messages);
+          }
+        }
+      }
+      setStateMessages(messages_copy);
+    }
+  };
+
   useEffect(() => {
     const startup = async () => {
       const authenticated = await isAuthenticated();
@@ -603,24 +648,21 @@ export const ChatPage = () => {
     }
   }, [stateSelectedGroupId, stateGroups]);
 
-  const checkIn = async() =>
-  {
-    await api.get("user/checkIn");
-  }
+  const checkIn = async () => {
+    await api.get("user/checkIn/");
+  };
 
   useEffect(() => {
     checkIn();
     const interval = setInterval(() => {
       checkIn();
     }, 300000);
-  
-    return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
-  }, [accessToken])
 
-  // checkIn("main");
+    return () => clearInterval(interval);
+  }, [accessToken]);
 
   const { sendMessage, readyState, getWebSocket } = useWebSocket(
-    `ws://127.0.0.1:8000/api/ws/chat?token=${accessToken}`,
+    `${WsUrl}?token=${accessToken}`,
     {
       onOpen: () => console.log("WS opened"),
       onClose: () => console.log("WS closed"),
@@ -641,37 +683,86 @@ export const ChatPage = () => {
     if (readyState == ReadyState.OPEN) sendMessage(msg);
   };
 
-  return (
-    <>
-      <div className="chatGrid">
-        <GroupComponent
-          onNewGroupCreated={handleNewGroup}
-          onUserUpdated={handleUserUpdated}
-          users={stateUsers}
-          groups={stateGroups}
-          messages={stateMessages}
-          curr_user={stateCurrUser}
-          selected_group={stateSelectedGroupId}
-          onGroupSelected={handleGroupSelected}
-          onGroupUpdated={handleGroupUpdated}
-          onGroupDeleted={handleGroupDeleted}
-          onEncryptionKeyUpdated={handleEncryptionKeyUpdated}
-        ></GroupComponent>
-        <ChatComponent
-          onSendClicked={handleSendClicked}
-          messages={stateDisplayedMessages}
-          groups={stateGroups}
-          user_id={stateCurrUser.id}
-          curr_group_id={stateSelectedGroupId}
-          users={stateUsers}
-          server_id={stateServerId}
-          newest_msg_index={stateNewestMessageIndex}
-          onLoadOlderMessages={handleLoadOlderMessages}
-          onResetNewestMessageIndex={() => {
-            setStateNewestMessageIndex(-1);
-          }}
-        ></ChatComponent>
-      </div>
-    </>
-  );
+  if (props.is_mobile) {
+    if (stateMobileGroupId == -1) {
+      return (
+        <div className="chatMobile">
+          <GroupComponent
+            is_mobile={true}
+            onNewGroupCreated={handleNewGroup}
+            onUserUpdated={handleUserUpdated}
+            users={stateUsers}
+            groups={stateGroups}
+            messages={stateMessages}
+            curr_user={stateCurrUser}
+            selected_group={stateSelectedGroupId}
+            onGroupSelected={handleGroupSelected}
+            onGroupUpdated={handleGroupUpdated}
+            onGroupDeleted={handleGroupDeleted}
+            onEncryptionKeyUpdated={handleEncryptionKeyUpdated}
+            onReloadEncryption={handleReloadEncryption}
+          ></GroupComponent>
+        </div>
+      );
+    } else {
+      return (
+        <div className="chatMobile">
+          <ChatComponent
+            is_mobile={true}
+            onSendClicked={handleSendClicked}
+            messages={stateDisplayedMessages}
+            groups={stateGroups}
+            user_id={stateCurrUser.id}
+            curr_group_id={stateSelectedGroupId}
+            users={stateUsers}
+            server_id={stateServerId}
+            newest_msg_index={stateNewestMessageIndex}
+            onLoadOlderMessages={handleLoadOlderMessages}
+            onResetNewestMessageIndex={() => {
+              setStateNewestMessageIndex(-1);
+            }}
+            onMobileBackClicked={handleMobileBackClicked}
+          ></ChatComponent>
+        </div>
+      );
+    }
+  } else {
+    return (
+      <>
+        <div className="chatGrid">
+          <GroupComponent
+            is_mobile={false}
+            onNewGroupCreated={handleNewGroup}
+            onUserUpdated={handleUserUpdated}
+            users={stateUsers}
+            groups={stateGroups}
+            messages={stateMessages}
+            curr_user={stateCurrUser}
+            selected_group={stateSelectedGroupId}
+            onGroupSelected={handleGroupSelected}
+            onGroupUpdated={handleGroupUpdated}
+            onGroupDeleted={handleGroupDeleted}
+            onEncryptionKeyUpdated={handleEncryptionKeyUpdated}
+            onReloadEncryption={handleReloadEncryption}
+          ></GroupComponent>
+          <ChatComponent
+            onSendClicked={handleSendClicked}
+            is_mobile={false}
+            messages={stateDisplayedMessages}
+            groups={stateGroups}
+            user_id={stateCurrUser.id}
+            curr_group_id={stateSelectedGroupId}
+            users={stateUsers}
+            server_id={stateServerId}
+            newest_msg_index={stateNewestMessageIndex}
+            onLoadOlderMessages={handleLoadOlderMessages}
+            onMobileBackClicked={handleMobileBackClicked}
+            onResetNewestMessageIndex={() => {
+              setStateNewestMessageIndex(-1);
+            }}
+          ></ChatComponent>
+        </div>
+      </>
+    );
+  }
 };

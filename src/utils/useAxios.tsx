@@ -15,7 +15,7 @@ const useAxios = () => {
     const {
         accessToken,
         signOut,
-        fetchAndUpdateTokens,
+        reloadAccessToken,
       } = useContext(AuthContext);
 
 
@@ -25,7 +25,6 @@ const useAxios = () => {
     });
 
     const onRequest = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
-        
         let isExpired = true;
 
         if(accessToken != "")
@@ -40,11 +39,11 @@ const useAxios = () => {
                 return config;
             }
         }
-        
+
         let success = false;
         for(let i=0; i<3; i++)
         {
-            const [ok, access] = await fetchAndUpdateTokens();
+            const [ok, access] = await reloadAccessToken();
             if (ok)
             {
                 success = true;
@@ -52,6 +51,7 @@ const useAxios = () => {
                 break;
             }
         }
+
         if (!success)
         {
             console.log("FAILED TO AUTO RELOAD TOKENS")

@@ -6,6 +6,7 @@ interface GroupElementProps {
   last_message: string;
   last_author: string | undefined;
   is_selected: boolean;
+  is_mobile: boolean;
   id: number;
   avatar: string;
   on_click: (arg: number) => void;
@@ -19,9 +20,14 @@ const GroupElement = (props: GroupElementProps) => {
     message_text = author_reduced + ": " + props.last_message;
   }
 
+  const settingsClicked = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    props.on_settings_click(props.id);
+  }
+
   return (
     <div
-      className={props.is_selected ? "groupElement selected" : "groupElement"}
+      className={props.is_selected && !props.is_mobile ? "groupElement selected" : "groupElement"}
       onClick={() => props.on_click(props.id)}
     >
       <img
@@ -36,9 +42,9 @@ const GroupElement = (props: GroupElementProps) => {
       <img
         src={SettingsIcon}
         alt="Settings icon"
-        className="settingsIcon"
+        className={props.is_mobile ? "settingsIconMobile" : "settingsIcon"}
         width={30}
-        onClick={() => props.on_settings_click(props.id)}
+        onClick={settingsClicked}
       />
     </div>
   );

@@ -41,7 +41,19 @@
     top: 5px;
 }
 
+.settingsIconMobile {
+    visibility: visible;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
 .settingsIcon:hover{
+    filter: brightness(111%) contrast(148%);
+    cursor: pointer;
+}
+
+.settingsIconMobile:hover{
     filter: brightness(111%) contrast(148%);
     cursor: pointer;
 }

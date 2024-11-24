@@ -1,7 +1,7 @@
 import Modal from "react-bootstrap/Modal";
 import AvatarEditor from "react-avatar-editor";
 import { useState, createRef, useRef, useEffect } from "react";
-import { CurrUserInterface } from "../../common/types.tsx";
+import { CurrUserInterface, GroupEncryptionInterface } from "../../common/types.tsx";
 import { downloadFile } from "../../common/utils";
 import { Button } from "react-bootstrap";
 import { useCookies } from "react-cookie";
@@ -14,17 +14,20 @@ import AuthContext from "../../context/AuthContext";
 
 interface Props {
   show: boolean;
+  is_mobile: boolean;
   user: CurrUserInterface;
   handleClosed: () => void;
   userUpdated: (new_user: CurrUserInterface) => void;
+  onReloadEncryption: (new_enc: GroupEncryptionInterface[]) => void;
 }
 
 export function UserModal(props: Props) {
   const [uploaded, setUploaded] = useState("");
   const preparedImageRef: React.RefObject<AvatarEditor> = createRef();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imgInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
   const [nickname, setNickname] = useState("");
-  const [cookies, _] = useCookies(["chatEncryption"]);
+  const [cookies, setCookie] = useCookies(["chatEncryption"]);
   const [scale, setScale] = useState(1.6);
   const api = useAxios();
   const { signOut } = useContext(AuthContext);
@@ -32,6 +35,7 @@ export function UserModal(props: Props) {
 
   const closeModal = () => {
     setUploaded("");
+    setDeleteClicked(false);
     props.handleClosed();
   };
 
@@ -81,12 +85,10 @@ export function UserModal(props: Props) {
   };
 
   const handleAvatarClicked = () => {
-    if (fileInputRef.current != null) fileInputRef.current.click();
+    if (imgInputRef.current != null) imgInputRef.current.click();
   };
 
   const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // console.log(e.target.name);
-    // setImgUrl(URL.createObjectURL(e.target.files[0]));
     if (!e.target.files) {
       return;
     }
@@ -106,11 +108,66 @@ export function UserModal(props: Props) {
     }
   };
 
+  const handleUploadEncClicked = () => {
+    if (jsonInputRef.current != null) jsonInputRef.current.click();
+  };
+
+  const handleChangeJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) {
+      return;
+    }
+
+    const file = e.target.files[0];
+
+    if (file && file.type == "application/json") {
+
+      const fileReader = new FileReader();
+      fileReader.readAsText(e.target.files[0], "UTF-8");
+      fileReader.onload = (e) => {
+        const target = e.target;
+        const result = target?.result;
+
+        if (typeof result == "string")
+        {
+          const data : GroupEncryptionInterface[] = JSON.parse(result);
+          if (typeof cookies.chatEncryption != "undefined") 
+          {
+            const curr_chat_encryption = cookies.chatEncryption;
+
+            for(let curr_cookie of data)
+            {
+              const index = curr_chat_encryption.findIndex(
+                (enc: GroupEncryptionInterface) => enc["group_uuid"] === curr_cookie.group_uuid
+              );
+              if (index != -1)
+              {
+                curr_chat_encryption[index] = curr_cookie;
+              }
+              else
+              {
+                curr_chat_encryption.push(curr_cookie);
+              }
+            }
+            setCookie("chatEncryption", curr_chat_encryption);
+            props.onReloadEncryption(curr_chat_encryption);
+          }
+          else
+          {
+            setCookie("chatEncryption", data);
+            props.onReloadEncryption(data);
+          }
+        }
+      };
+    }
+  };
+
   const downloadEncryptionKeys = () => {
-    downloadFile(
-      "groopie_keys.json",
-      JSON.stringify(cookies.chatEncryption, null, 2)
-    );
+    if (typeof cookies.chatEncryption != undefined) {
+      downloadFile(
+        "groopie_keys.json",
+        JSON.stringify(cookies.chatEncryption, null, 2)
+      );
+    }
   };
 
   const handleScaleChanged = (val: number | number[]) => {
@@ -121,6 +178,8 @@ export function UserModal(props: Props) {
     await api.delete("/user/");
     signOut();
   };
+
+  const button_size = props.is_mobile ? " smallFontMobile" : "";
 
   if (deleteClicked) {
     return (
@@ -134,22 +193,25 @@ export function UserModal(props: Props) {
           <Modal.Header className="align-items-start" closeButton>
             <div className="d-flex flex-column">
               <Modal.Title className="text-break">
-                {props.user.username}
+                {props.user.nickname}
               </Modal.Title>
             </div>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column align-items-center">
             <h3 className="mt-3">Delete your account?</h3>
-            <h5 className="mt-1">
+            <h5 className={props.is_mobile ? "mt-1 small" : "mt-1"}>
               All your groups and messages will be removed!
             </h5>
 
             <div className="groupButtonGrid mt-3">
-              <Button className="btn-danger" onClick={deleteAccount}>
+              <Button
+                className={"btn-danger" + button_size}
+                onClick={deleteAccount}
+              >
                 Yes
               </Button>
               <Button
-                className="defaultAppColor"
+                className={"defaultAppColor" + button_size}
                 onClick={() => {
                   setDeleteClicked(false);
                 }}
@@ -197,7 +259,7 @@ export function UserModal(props: Props) {
 
             <div className="userTwoButtonGrid mt-3">
               <Button
-                className="btn-danger"
+                className={"btn-danger" + button_size}
                 onClick={() => {
                   setUploaded("");
                 }}
@@ -205,7 +267,10 @@ export function UserModal(props: Props) {
                 Reject
               </Button>
 
-              <Button className="defaultAppColor" onClick={handleConfirmAvatar}>
+              <Button
+                className={"defaultAppColor" + button_size}
+                onClick={handleConfirmAvatar}
+              >
                 Confirm
               </Button>
             </div>
@@ -223,10 +288,18 @@ export function UserModal(props: Props) {
           className="my-modal"
         >
           <Modal.Header closeButton>
-            <Modal.Title>{props.user.username}</Modal.Title>
+            <Modal.Title>{props.user.nickname}</Modal.Title>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column align-items-center">
-            <img className="userAvatar" src={props.user.avatar}></img>
+            <input
+              type="file"
+              id="input_json"
+              ref={jsonInputRef}
+              className="inputFiles"
+              onChange={handleChangeJson}
+            />
+
+            <img className="userAvatarDefault" src={props.user.avatar}></img>
 
             <div className="align-self-start mt-2 ms-1">Nickname</div>
 
@@ -243,15 +316,15 @@ export function UserModal(props: Props) {
           <Modal.Footer className="d-flex flex-column align-items-center">
             <div className="userButtonGrid mt-3">
               <Button
-                className="defaultAppColor"
+                className={"defaultAppColor" + button_size}
                 onClick={downloadEncryptionKeys}
               >
                 Download encryption keys
               </Button>
 
               <Button
-                className="defaultAppColor"
-                onClick={downloadEncryptionKeys}
+                className={"defaultAppColor" + button_size}
+                onClick={handleUploadEncClicked}
               >
                 Upload encryption keys
               </Button>
@@ -259,7 +332,7 @@ export function UserModal(props: Props) {
               <div></div>
 
               <Button
-                className="btn-danger"
+                className={"btn-danger" + button_size}
                 onClick={() => {
                   setDeleteClicked(true);
                 }}
@@ -281,20 +354,28 @@ export function UserModal(props: Props) {
           className="my-modal"
         >
           <Modal.Header closeButton>
-            <Modal.Title>{props.user.username}</Modal.Title>
+            <Modal.Title>{props.user.nickname}</Modal.Title>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column align-items-center">
             <input
-              ref={fileInputRef}
+              type="file"
+              id="input_json"
+              ref={jsonInputRef}
+              className="inputFiles"
+              onChange={handleChangeJson}
+            />
+
+            <input
+              ref={imgInputRef}
               type="file"
               id="img"
               name="img"
               accept="image/*"
-              className="inputImage"
+              className="inputFiles"
               onChange={handleChangeImage}
             />
             <img
-              className="userAvatar"
+              className="userAvatarDefault userAvatarDefault"
               src={props.user.avatar}
               onClick={handleAvatarClicked}
             ></img>
@@ -314,25 +395,28 @@ export function UserModal(props: Props) {
           <Modal.Footer className="d-flex flex-column align-items-center">
             <div className="userButtonGrid mt-3">
               <Button
-                className="defaultAppColor"
+                className={"defaultAppColor" + button_size}
                 onClick={downloadEncryptionKeys}
               >
                 Download encryption keys
               </Button>
 
               <Button
-                className="defaultAppColor"
-                onClick={downloadEncryptionKeys}
+                className={"defaultAppColor" + button_size}
+                onClick={handleUploadEncClicked}
               >
                 Upload encryption keys
               </Button>
 
-              <Button className="defaultAppColor" onClick={signOut}>
+              <Button
+                className={"defaultAppColor" + button_size}
+                onClick={signOut}
+              >
                 Logout
               </Button>
 
               <Button
-                className="btn-danger"
+                className={"btn-danger" + button_size}
                 onClick={() => {
                   setDeleteClicked(true);
                 }}

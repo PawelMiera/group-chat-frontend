@@ -7,6 +7,18 @@
     align-items: center;
 }
 
+.labelMobile
+{
+    font-size: 0.9em !important;
+}
+
+.inputGridMobile {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: start;
+}
+
 .form-control-modal {
     background-color: var(--col-text-input-modal) !important;
     border-color: var(--col-text-input-modal) !important;

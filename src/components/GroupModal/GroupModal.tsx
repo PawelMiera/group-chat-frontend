@@ -17,6 +17,7 @@ import useAxios from "../../utils/useAxios"
 interface Props {
   show: boolean;
   group: GroupInterface;
+  is_mobile: boolean;
   handleClosed: () => void;
   onGroupUpdated: (new_group: GroupInterface) => void;
   onGroupDeleted: (uuid: string, id: number) => void;
@@ -47,12 +48,10 @@ export function GroupModal(props: Props) {
   const api = useAxios();
 
   let curr_enc_key = "";
-  let cookie_array: GroupEncryptionInterface[] = [];
 
   try{
-    cookie_array = cookies.chatEncryption;
-    const temp_key = cookie_array.find(
-      (enc) => enc["group_uuid"] === props.group.uuid
+    const temp_key = cookies.chatEncryption.find(
+      (enc: GroupEncryptionInterface) => enc["group_uuid"] === props.group.uuid
     )?.key;
 
     if (typeof temp_key != "undefined")
@@ -93,13 +92,13 @@ export function GroupModal(props: Props) {
         if (typeof curr_enc_key != "undefined") {
           last_enc_key = curr_enc_key;
         }
-        if (last_enc_key != encKey) {
+        if (typeof cookies.chatEncryption != "undefined" && last_enc_key != encKey) {
           const curr_chat_encryption = cookies.chatEncryption;
 
           if (curr_chat_encryption != null && curr_chat_encryption != "") {
 
-            const index = cookie_array.findIndex(
-              (enc) => enc["group_uuid"] === props.group.uuid
+            const index = cookies.chatEncryption.findIndex(
+              (enc: GroupEncryptionInterface) => enc["group_uuid"] === props.group.uuid
             );
 
             if (index != -1) {
@@ -323,7 +322,7 @@ export function GroupModal(props: Props) {
           </Modal.Header>
           <Modal.Body className="d-flex flex-column align-items-center">
             <h3 className="mt-3">Do you want to leave the group?</h3>
-            <h5 className="mt-1">All your messages will be deleted!</h5>
+            <h5 className={props.is_mobile ?"h6 mt-1" : "mt-1"}>All your messages will be deleted!</h5>
 
             <div className="groupButtonGrid mt-3">
               <Button className="btn-danger" onClick={handleLeaveGroup}>
@@ -442,7 +441,7 @@ export function GroupModal(props: Props) {
             ></input>
             <div className="mt-1 text-danger">{errorName}</div>
 
-            <div className="align-self-start mt-3 ms-1">
+            <div className="align-self-start mt-1 ms-1">
               EncryptionKey - be carefull when changing
             </div>
 
@@ -475,13 +474,13 @@ export function GroupModal(props: Props) {
           </Modal.Body>
 
           <Modal.Footer className="d-flex flex-column align-items-center">
-            <div className="align-self-start ms-1 mt-1">
+            <div className="align-self-start ms-1 mt-0">
               {" "}
               Your friends can join with following key:
             </div>
 
             <div className="input-group mt-1 align-items-center">
-              <label className="form-control form-control-modal linkOutput me-1">
+              <label className={"form-control form-control-modal linkOutput me-1" + (props.is_mobile ? " labelMobile": "")}>
                 {groupInviteKey}
               </label>
               <CopyToClipboard text={groupInviteKey} onCopy={handleKeyCopied}>
@@ -497,13 +496,13 @@ export function GroupModal(props: Props) {
               </CopyToClipboard>
             </div>
 
-            <div className="align-self-start ms-1 mt-3">
+            <div className="align-self-start ms-1 mt-1">
               {" "}
               Or send them this link:
             </div>
 
             <div className="input-group align-items-center">
-              <label className="form-control form-control-modal linkOutput me-1">
+              <label className={"form-control form-control-modal linkOutput me-1" + (props.is_mobile ? " labelMobile": "")}>
                 {groupInviteUrl}
               </label>
 
@@ -520,7 +519,7 @@ export function GroupModal(props: Props) {
               </CopyToClipboard>
             </div>
 
-            <div className="groupButtonGrid mt-3">
+            <div className="groupButtonGrid mt-2">
               <Button className="defaultAppColor"
                 onClick={() => {
                 setLeaveClicked(true);

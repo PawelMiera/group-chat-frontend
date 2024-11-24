@@ -8,6 +8,7 @@ import useAxios from "../../utils/useAxios";
 
 interface Props {
   show: boolean;
+  is_mobile: boolean;
   groupToJoin: string;
   handleClosed: () => void;
   newGroupJoined: (group_uuid: string, enc_key: string) => void;
@@ -76,33 +77,34 @@ export function JoinGroupModal(props: Props) {
   };
 
   const downloadEncryptionKeys = () => {
-    downloadFile(
-      "groopie_keys.json",
-      JSON.stringify(cookies.chatEncryption, null, 2)
-    );
+    if (typeof cookies.chatEncryption != undefined) {
+      downloadFile(
+        "groopie_keys.json",
+        JSON.stringify(cookies.chatEncryption, null, 2)
+      );
+    }
   };
-
 
   useEffect(() => {
     if (props.groupToJoin != "") {
-      console.log("Joining group from url");
-        try {
-          const parsed_join = JSON.parse(props.groupToJoin);
-          if (
-            parsed_join.hasOwnProperty("uuid") &&
-            parsed_join.hasOwnProperty("key")
-          ) {
-            localStorage.removeItem("joinGroup");
-            handleJoinGroup(parsed_join["uuid"], parsed_join["key"]);
-          }
-        } catch (error) {
-          console.log("Failed to join group");
-          setError("Failed to join group");
+      try {
+        const parsed_join = JSON.parse(props.groupToJoin);
+        if (
+          parsed_join.hasOwnProperty("uuid") &&
+          parsed_join.hasOwnProperty("key")
+        ) {
+          localStorage.removeItem("joinGroup");
+          handleJoinGroup(parsed_join["uuid"], parsed_join["key"]);
         }
+      } catch (error) {
+        console.log("Failed to join group");
+        setError("Failed to join group");
+      }
     }
   }, [props.groupToJoin]);
 
-
+  const text_size = props.is_mobile ? " small" : "";
+  const button_size = props.is_mobile ? "" : " btn-lg";
 
   if (joinedGroup) {
     return (
@@ -120,7 +122,7 @@ export function JoinGroupModal(props: Props) {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body className="d-flex flex-column">
-            <div className="mt-3">
+            <div className={"mt-3" + text_size}>
               We don't save encryption key on our servers.
               <br />
               It will be stored only in your browser memory.
@@ -128,7 +130,9 @@ export function JoinGroupModal(props: Props) {
             </div>
 
             <Button
-              className="defaultAppColor mt-3 mx-auto d-inline-flex btn-lg"
+              className={
+                "defaultAppColor mt-3 mx-auto d-inline-flex" + button_size
+              }
               onClick={downloadEncryptionKeys}
             >
               Download encryption keys
@@ -159,7 +163,7 @@ export function JoinGroupModal(props: Props) {
             ></input>
             <div className="mt-3 text-danger">{error}</div>
 
-            <div className="mt-3">
+            <div className={"mt-3" + text_size}>
               We don't save encryption key on our servers.
               <br />
               It will be stored only in your browser memory.
@@ -167,7 +171,7 @@ export function JoinGroupModal(props: Props) {
             </div>
 
             <Button
-              className="defaultAppColor mt-3 mx-auto d-inline-flex justify-content-center btn-lg"
+              className={"defaultAppColor mt-3 mx-auto" + button_size}
               onClick={joinGroup}
             >
               Join Group

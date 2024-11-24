@@ -10,6 +10,18 @@
     gap: 10px;
 }
 
+.leftContainerMobile {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--col-containers);
+    padding: 10px;
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    gap: 10px;
+    width: 100vw;
+}
+
 .groupContainer {
     display: flex;
     flex-direction: column;

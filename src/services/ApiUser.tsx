@@ -32,7 +32,7 @@ export let fetchRegisterAnonymous = async () => {
 }; 
 
 
-export let fetchRefreshToken = async (refresh: string) => {
+export let fetchAccessToken = async (refresh: string) => {
 
     const requestOptions = {
         method: 'POST',
@@ -46,6 +46,18 @@ export let fetchRefreshToken = async (refresh: string) => {
     
     return [response.ok, response.status, data];
 };
+
+export let fetchCheckIn = async (authHeader: string) => {
+    const requestOptions = {
+        method: 'GET',
+        headers: {'Content-type': 'application/json', "Authorization": authHeader},
+    };
+
+    const response = await fetch(`${ApiUrl}/user/checkIn/`, requestOptions);
+
+    return response.ok;
+}; 
+
 
 
 export let fetchRotateToken = async (authHeader: string) => {

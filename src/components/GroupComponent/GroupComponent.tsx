@@ -4,7 +4,8 @@ import {
   UserInterface,
   CurrUserInterface,
   GroupMessagesInterface,
-  MessageInterface
+  MessageInterface,
+  GroupEncryptionInterface,
 } from "../../common/types.tsx";
 import "./GroupComponent.css";
 import GroupElement from "../GroupElement/GroupElement";
@@ -15,6 +16,7 @@ import { UserModal } from "../UserModal/UserModal.tsx";
 import { GroupModal } from "../GroupModal/GroupModal.tsx";
 
 interface GroupComponentProps {
+  is_mobile: boolean;
   groups: GroupInterface[];
   messages: GroupMessagesInterface[];
   users: UserInterface[];
@@ -26,6 +28,7 @@ interface GroupComponentProps {
   onGroupUpdated: (new_group: GroupInterface) => void;
   onGroupDeleted: (uuid: string, group_id: number) => void;
   onEncryptionKeyUpdated: (enc_key: string, group_id: number) => void;
+  onReloadEncryption: (new_enc: GroupEncryptionInterface[]) => void;
 }
 
 const ChatComponent = (props: GroupComponentProps) => {
@@ -52,31 +55,33 @@ const ChatComponent = (props: GroupComponentProps) => {
   };
 
   let group_elements = [];
-  for(let group of props.groups)
-  {
-    let last_msg : MessageInterface = {author: -1, msg: "", created:""};
-    const curr_msgs = props.messages.find((msg: GroupMessagesInterface) => msg.group_id === group.id);
+  for (let group of props.groups) {
+    let last_msg: MessageInterface = { author: -1, msg: "", created: "" };
+    const curr_msgs = props.messages.find(
+      (msg: GroupMessagesInterface) => msg.group_id === group.id
+    );
     if (typeof curr_msgs != "undefined" && curr_msgs.messages.length > 0) {
-      last_msg = curr_msgs.messages[curr_msgs.messages.length -1];
+      last_msg = curr_msgs.messages[curr_msgs.messages.length - 1];
     }
 
-    group_elements.push(            
-    <GroupElement
-      id={group.id}
-      on_click={() => {
-        props.onGroupSelected(group.id);
-      }}
-      key={group.id}
-      group_name={group.name}
-      avatar={group.avatar}
-      last_message={last_msg.msg}
-      last_author={
-        props.users.find((user) => user.id === last_msg.author)
-          ?.name
-      }
-      is_selected={props.selected_group == group.id}
-      on_settings_click={handleSettingsGroupClicked}
-    ></GroupElement>);
+    group_elements.push(
+      <GroupElement
+        is_mobile={props.is_mobile}
+        id={group.id}
+        on_click={() => {
+          props.onGroupSelected(group.id);
+        }}
+        key={group.id}
+        group_name={group.name}
+        avatar={group.avatar}
+        last_message={last_msg.msg}
+        last_author={
+          props.users.find((user) => user.id === last_msg.author)?.name
+        }
+        is_selected={props.selected_group == group.id}
+        on_settings_click={handleSettingsGroupClicked}
+      ></GroupElement>
+    );
   }
 
   useEffect(() => {
@@ -92,6 +97,7 @@ const ChatComponent = (props: GroupComponentProps) => {
   return (
     <>
       <NewGroupModal
+        is_mobile={props.is_mobile}
         newGroupCreated={props.onNewGroupCreated}
         handleClosed={() => {
           setShowNewGroupModal(false);
@@ -99,6 +105,7 @@ const ChatComponent = (props: GroupComponentProps) => {
         show={showNewGroupModal}
       ></NewGroupModal>
       <JoinGroupModal
+        is_mobile={props.is_mobile}
         newGroupJoined={props.onNewGroupCreated}
         groupToJoin={groupToJoin}
         handleClosed={() => {
@@ -107,16 +114,19 @@ const ChatComponent = (props: GroupComponentProps) => {
         show={showJoinGroupModal}
       ></JoinGroupModal>
       <UserModal
+        is_mobile={props.is_mobile}
         user={props.curr_user}
         show={showUserModal}
         userUpdated={props.onUserUpdated}
         handleClosed={() => {
           setShowUserModal(false);
         }}
+        onReloadEncryption={props.onReloadEncryption}
       ></UserModal>
       <GroupModal
         group={settingsGroup}
         show={showGroupModal}
+        is_mobile={props.is_mobile}
         onGroupUpdated={handleGroupUpdated}
         onGroupDeleted={props.onGroupDeleted}
         onEncryptionKeyUpdated={props.onEncryptionKeyUpdated}
@@ -124,7 +134,9 @@ const ChatComponent = (props: GroupComponentProps) => {
           setShowGroupModal(false);
         }}
       ></GroupModal>
-      <div className="leftContainer">
+      <div
+        className={props.is_mobile ? "leftContainerMobile" : "leftContainer"}
+      >
         <div className="settingsDiv align-items-center mb-2">
           <div>
             <Button
@@ -156,9 +168,7 @@ const ChatComponent = (props: GroupComponentProps) => {
             }}
           />
         </div>
-        <div className="groupContainer">
-          {group_elements}
-        </div>
+        <div className="groupContainer">{group_elements}</div>
       </div>
     </>
   );

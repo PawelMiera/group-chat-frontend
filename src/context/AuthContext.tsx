@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
-import { fetchRefreshToken, fetchRotateToken } from "../services/ApiUser";
+import { fetchAccessToken, fetchRotateToken, fetchCheckIn } from "../services/ApiUser";
 import { jwtDecode } from "jwt-decode";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -12,8 +12,7 @@ interface AuthInterface {
   signOut: () => void;
   updateRefreshToken: (refresh_token: string) => void;
   updateAccessToken: (access_token: string) => void;
-  fetchTokens: () => Promise<[boolean, string]>;
-  fetchAndUpdateTokens: () => Promise<[boolean, string]>;
+  reloadAccessToken: () => Promise<[boolean, string]>;
   isAuthenticated: () => Promise<boolean>;
 }
 
@@ -43,13 +42,13 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
           typeof decoded_access_token.exp != "undefined" &&
           dayjs.unix(decoded_access_token.exp).diff(dayjs()) < 1
         ) {
-          const [ok, access] = await fetchAndUpdateTokens();
+          const [ok, access] = await reloadAccessToken();
           if (ok) {
             curr_access_token = access;
           }
         }
       } else {
-        const [ok, access] = await fetchAndUpdateTokens();
+        const [ok, access] = await reloadAccessToken();
         if (ok) {
           curr_access_token = access;
         }
@@ -108,21 +107,24 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     navigate("/");
   };
 
-  const fetchTokens = async (): Promise<[boolean, string]> => {
+  const handleFetchAccessToken = async (): Promise<[boolean, string]> => {
     try {
-      let out_token = refreshToken;
+      let out_refresh_token = refreshToken;
 
       if (refreshToken == null || refreshToken == "") {
-        out_token =
+        out_refresh_token =
           cookies.authRefresh && cookies.authRefresh != "undefined"
             ? cookies.authRefresh
             : "";
-        setRefreshToken(out_token);
+        setRefreshToken(out_refresh_token);
       }
-      if (out_token != "") {
-        const [ok, _, data] = await fetchRefreshToken(out_token);
+      if (out_refresh_token != "") {
+        const [ok, _, data] = await fetchAccessToken(out_refresh_token);
         if (ok) {
-          return [true, data["access"]];
+
+          const ok_checkin = await fetchCheckIn(`Bearer ${data["access"]}`);
+
+          return [ok_checkin, data["access"]];
         }
       }
     } catch (error) {
@@ -132,9 +134,8 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     return [false, ""];
   };
 
-  const fetchAndUpdateTokens = async (): Promise<[boolean, string]> => {
-    const [ok, access] = await fetchTokens();
-
+  const reloadAccessToken = async (): Promise<[boolean, string]> => {
+    const [ok, access] = await handleFetchAccessToken();
     if (ok) {
       updateAccessToken(access);
     }
@@ -149,7 +150,7 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
         return false;
       }
     }
-    const [ok] = await fetchAndUpdateTokens();
+    const [ok] = await reloadAccessToken();
     return ok;
   };
 
@@ -160,9 +161,8 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     signOut: signOut,
     updateAccessToken: updateAccessToken,
     updateRefreshToken: updateAccessToken,
-    fetchAndUpdateTokens: fetchAndUpdateTokens,
+    reloadAccessToken: reloadAccessToken,
     isAuthenticated: isAuthenticated,
-    fetchTokens: fetchTokens,
   };
 
   return (
