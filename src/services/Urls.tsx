@@ -1,4 +1,4 @@
-const production = 'https://mhosting.ipv64.net/api';
+const production = 'https://mhosting.ipv64.net/groopieApi';
 const development = 'http://localhost:8000/api';
 
 const production_front = 'https://mhosting.ipv64.net/groopie';
