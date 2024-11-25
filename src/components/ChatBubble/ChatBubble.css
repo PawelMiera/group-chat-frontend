@@ -1,0 +1,91 @@
+.bubble {
+    padding: 13px 14px;
+    border-radius: 5px;
+    max-width: 75%;
+    white-space: pre-line;
+    word-break: break-all;
+}
+
+.you {
+    color: var(--dark);
+    background-color: var(--col-chat-you);
+    align-self: flex-end;
+    margin-top: 10px;
+}
+
+.others {
+    float: left;
+    color: var(--white);
+    background-color: var(--col-chat-others);
+    /* align-self: flex-start; */
+}
+
+.bubbleAnimationLeft {
+    animation-name: slideFromLeft;
+    animation-duration: 0.5s;
+}
+
+.bubbleAnimationRight {
+    animation-name: slideFromRight;
+    animation-duration: 0.5s;
+}
+
+
+.serverMessage {
+    text-align: center;
+}
+
+
+.chatAvatar{
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+.othersWrapper {
+    display: flex;
+    align-items: end;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+@keyframes slideFromLeft {
+    0% {
+        margin-left: 10%;
+        opacity: 0.5;
+    }
+    100% {
+        margin-left: 0;
+        opacity: 1;
+    }
+}
+@-webkit-keyframes slideFromLeft {
+    0% {
+        margin-left: 10%;
+        opacity: 0.5;
+    }
+    100% {
+        margin-left: 0;
+        opacity: 1;
+    }
+}
+@keyframes slideFromRight {
+    0% {
+        margin-right: 10%;
+        opacity: 0.5;
+    }
+    100% {
+        margin-right: 0;
+        opacity: 1;
+    }
+}
+@-webkit-keyframes slideFromRight {
+    0% {
+        margin-right: 10%;
+        opacity: 0.5;
+    }
+    100% {
+        margin-right: 0;
+        opacity: 1;
+    }
+}

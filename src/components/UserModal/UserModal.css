@@ -1,0 +1,37 @@
+.userAvatar {
+    cursor: pointer;
+}
+
+.userAvatarDefault {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+
+.userAvatar:hover {
+    filter: brightness(110%);
+}
+
+.inputFiles {
+    display: none;
+}
+
+.smallFontMobile {
+    font-size: 0.9em !important;
+}
+
+.userButtonGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.userTwoButtonGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}

@@ -1,0 +1,50 @@
+.leftContainer {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--col-containers);
+    padding: 30px;
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    border-radius: 3vh;
+    gap: 10px;
+}
+
+.leftContainerMobile {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--col-containers);
+    padding: 10px;
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    gap: 10px;
+    width: 100vw;
+}
+
+.groupContainer {
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    gap: 1vh;
+}
+
+.accountSettingsIcon{
+    margin-left: auto;
+    border-radius: 50%;
+    width: 60px;
+}
+
+.accountSettingsIcon:hover{
+    filter: brightness(110%);
+    cursor: pointer;
+}
+
+.settingsDiv{
+    display: flex;
+    position: sticky;
+    gap: 10px;
+    top: 0;
+}

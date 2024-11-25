@@ -1,0 +1,93 @@
+.chatComponentContainer{
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    padding: 30px;
+    padding-top: 10px;
+    background-color: var(--col-containers);
+    border-radius: 3vh;
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    gap: 10px;
+}
+
+
+.chatComponentContainerMobile{
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    padding: 10px;
+    padding-top: 10px;
+    background-color: var(--col-containers);
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    gap: 10px;
+    width: 100vw;
+    /* height: 80vh; */
+}
+
+.chatContainer{
+    background-color: var(--col-containers);
+    overflow-y: scroll;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    display: flex;
+    flex-direction: column;    
+}
+
+.sendMessageDiv {
+    display: flex;
+    position: sticky;
+    gap: 10px;
+    bottom: 0;
+}
+
+.groupNameDivMobile {
+    position: sticky;
+    margin-bottom: auto;    
+    top: 0;
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.groupNameDiv {
+    position: sticky;
+    margin-bottom: auto;    
+    top: 0;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.groupTopIcon{
+    border-radius: 50%;
+    width: 50px;
+}
+
+.form-control {
+    word-wrap: break-word !important;
+    word-break: break-all !important;
+    max-height: 100px;
+    resize: none;
+    background-color: var(--col-text-input)!important;
+    border-color: var(--col-text-input) !important;
+}
+
+.form-control:focus {
+    border-color: var(--col-text-input) !important;
+  }
+
+  .backIcon{
+    width:40px;
+    cursor: pointer;
+  }
+
+  .backIcon:hover{
+    filter: brightness(80%);
+  }

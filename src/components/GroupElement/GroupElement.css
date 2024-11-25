@@ -1,0 +1,65 @@
+.groupElement {
+    background-color: var(--col-groups);
+    padding: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    display: flex;
+    position: relative;
+    align-items: center ;
+    gap: 10px;
+}
+.groupElement:hover {
+    background-color: var(--col-groups-hover);
+    cursor: pointer;
+}
+
+.groupElement:hover .settingsIcon{
+    visibility: visible;
+}
+
+.selected
+{
+    background-color: var(--col-groups-selected);
+}
+
+
+.groupText{
+    font-size: small;
+}
+
+
+.groupName {
+    font-size: large;
+    font-weight: bold;
+}
+
+.settingsIcon {
+    visibility: hidden;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.settingsIconMobile {
+    visibility: visible;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.settingsIcon:hover{
+    filter: brightness(111%) contrast(148%);
+    cursor: pointer;
+}
+
+.settingsIconMobile:hover{
+    filter: brightness(111%) contrast(148%);
+    cursor: pointer;
+}
+
+.groupAvatar {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}

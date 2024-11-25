@@ -1,0 +1,35 @@
+.groupImgAvatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.groupImgAvatar:hover {
+    filter: brightness(110%);
+}
+
+.inputGroupImage {
+    display: none;
+}
+
+.inputEncKey
+{
+    width: 100%;
+}
+
+.bigSwitch {
+    transform: scale(1.5);
+}
+
+.groupButtonGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.groupNameModal {
+    max-width: 80%;
+    word-break: break-all;
+}

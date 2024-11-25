@@ -1,0 +1,7 @@
+.loginBackgroundMobile{
+    background-color: var(--background-color);
+    width: 100vw;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: 1fr 10fr;
+}

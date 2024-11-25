@@ -1,0 +1,34 @@
+:root {
+   
+    --col-background: #1e1f22;
+    --col-dialog: #2b2d30;
+    --col-containers: #2b2d30;
+    --col-chat-others: #4d4d4d;
+    --col-app-default: #793bec;
+    --col-app-default-hover: #682adb;
+    --col-chat-you: #4c4fb4;
+    --col-groups: #414141;
+    --col-groups-hover: #585858;
+    --col-groups-selected: #585858;
+    --col-text-input: #1e2024;
+    --col-text-input-modal: #191919;
+
+    --col-white: #dee0e5;
+    --col-white-lower: #a0a3a7;
+}
+
+
+.defaultAppColor {
+    background-color: var(--col-app-default) !important;
+    border-color: var(--col-app-default) !important;
+}
+
+.defaultAppColorNoHover {
+    background-color: var(--col-app-default) !important;
+    border-color: var(--col-app-default) !important;
+}
+
+.defaultAppColor:hover {
+    background-color: var(--col-app-default-hover) !important;
+    border-color: var(--col-app-default-hover) !important;
+}

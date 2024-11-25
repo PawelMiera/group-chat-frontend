@@ -1,0 +1,14 @@
+.chatGrid {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    height: 100vh;
+    width: 100vw;
+    gap: 10px;
+    padding: 10px;
+}
+
+.chatMobile {
+    display: flex;
+    height: 100dvh;
+    width: 100dvw;
+}

@@ -1,0 +1,48 @@
+.inputGrid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.labelMobile
+{
+    font-size: 0.9em !important;
+}
+
+.inputGridMobile {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: start;
+}
+
+.form-control-modal {
+    background-color: var(--col-text-input-modal) !important;
+    border-color: var(--col-text-input-modal) !important;
+}
+
+.form-control-modal:focus {
+    border-color: var(--col-text-input-modal) !important;
+}
+
+.smallText {
+    font-size: 1em;
+}
+
+.fontRed {
+    color: red;
+}
+
+.linkOutput {
+    border-radius: 1vh !important;
+}
+
+.copyButton{
+    padding-left: 10%;
+    padding-right: 10%;
+    min-width: 42px;
+    aspect-ratio: 1;
+}
