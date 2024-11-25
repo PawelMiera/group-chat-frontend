@@ -21,7 +21,7 @@ export function decrypt(text: string, password: string) {
         }
         catch (error)
         {
-            console.log("Failed to decrypt:", text);
+            console.log("Failed to decrypt:", error, text);
         }
     }
     return text;

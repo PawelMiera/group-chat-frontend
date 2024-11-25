@@ -223,17 +223,38 @@ export const ChatPage = (props: ChatPageProps) => {
       );
 
       if (typeof curr_group != "undefined") {
-        const new_msg: MessageInterface = {
-          author: parsed_msg["author"],
-          created: parsed_msg["created"],
-          msg: decrypt(parsed_msg["msg"], getGroupEncKey(curr_group.uuid)),
-        };
+
+        const enc_messages_copy = structuredClone(stateEncryptedMessages);
+
+        const index_enc = enc_messages_copy.findIndex(
+          (msgs) => msgs.group_id == curr_group_id
+        );
+
+        if (index_enc != -1) {
+          const new_msg: MessageInterface = {
+            author: parsed_msg["author"],
+            created: parsed_msg["created"],
+            msg: parsed_msg["msg"],
+          };
+
+          enc_messages_copy[index_enc].messages = [
+            ...enc_messages_copy[index_enc].messages,
+            new_msg,
+          ];
+          setStateEncryptedMessages(enc_messages_copy);
+        }
 
         const messages_copy = structuredClone(stateMessages);
 
         const index = messages_copy.findIndex(
           (msgs) => msgs.group_id == curr_group_id
         );
+
+        const new_msg: MessageInterface = {
+          author: parsed_msg["author"],
+          created: parsed_msg["created"],
+          msg: decrypt(parsed_msg["msg"], getGroupEncKey(curr_group.uuid)),
+        };
 
         if (index != -1) {
           messages_copy[index].messages = [
@@ -266,7 +287,6 @@ export const ChatPage = (props: ChatPageProps) => {
         }
       }
     }
-
     return true;
   };
 
@@ -288,14 +308,14 @@ export const ChatPage = (props: ChatPageProps) => {
   ) => {
     let output_messsages: MessageInterface[] = [];
     messages.forEach((message) => {
-      let decrypted_message: MessageInterface;
+      let decrypted_message: MessageInterface  = {
+        msg: "",
+        author: message.author,
+        created: message.created,
+      };;
       if (message.author != server_id) {
         const decrypted_msg = decrypt(message.msg, enc_key);
-        decrypted_message = {
-          msg: decrypted_msg,
-          author: message.author,
-          created: message.created,
-        };
+        decrypted_message.msg = decrypted_msg;
       } else {
         decrypted_message = message;
       }
@@ -561,6 +581,7 @@ export const ChatPage = (props: ChatPageProps) => {
   };
 
   const handleEncryptionKeyUpdated = (enc_key: string, group_id: number) => {
+
     if (stateSelectedGroupId == group_id) {
       setStateSelectedGroupEncKey(enc_key);
     }
@@ -568,6 +589,7 @@ export const ChatPage = (props: ChatPageProps) => {
     const index_enc = stateEncryptedMessages.findIndex(
       (msgs) => msgs.group_id == group_id
     );
+
 
     if (index_enc != -1) {
       const decrypted_messages = decryptMessagesArrayWithKey(
