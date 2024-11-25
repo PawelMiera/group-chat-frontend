@@ -28,15 +28,11 @@ function App() {
       <Router>
         <AuthProvider>
           <Routes>
-            <Route path="/groopie/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
-            <Route path="/groopie/chat/" element={<ChatPage is_mobile={devOrientation}/>} />
-            <Route path="/groopie/chat" element={<ChatPage is_mobile={devOrientation}/>} />
-            <Route path="/groopie/join/" element={<JoinPage />} />
-            <Route path="/groopie/join" element={<JoinPage />} />
-            <Route path="/groopie/login/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
-            <Route path="/groopie/login" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
-            <Route path="/groopie/*" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
-            <Route path="/groopie/*/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
+            <Route path="/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
+            <Route path="/chat/" element={<ChatPage is_mobile={devOrientation}/>} />
+            <Route path="/join/" element={<JoinPage />} />
+            <Route path="/login/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
+            <Route path="/*" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
           </Routes>
         </AuthProvider>
       </Router>
