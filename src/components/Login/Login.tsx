@@ -46,7 +46,7 @@ const Login = (props: MobileProps) => {
 
           signIn(result["access"], result["refresh"]);
 
-          navigate("/chat/");
+          navigate("/groopie/chat/");
         } else {
           setErrors({ password: result.password, email: result.username });
         }
@@ -62,7 +62,7 @@ const Login = (props: MobileProps) => {
       const [ok, _, result] = await fetchRegisterAnonymous();
       if (ok) {
         signIn(result["access"], result["refresh"]);
-        navigate("/chat/");
+        navigate("/groopie/chat/");
       } else {
         setErrors({ password: result.password, email: result.username });
       }

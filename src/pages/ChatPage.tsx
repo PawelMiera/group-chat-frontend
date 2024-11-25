@@ -652,7 +652,7 @@ export const ChatPage = (props: ChatPageProps) => {
     const startup = async () => {
       const authenticated = await isAuthenticated();
       if (!authenticated) {
-        navigate("/");
+        navigate("/groopie/");
         return;
       }
       await getGroups();

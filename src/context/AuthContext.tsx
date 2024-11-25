@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     updateAccessToken("");
     setCookie("authRefresh", "");
     setRefreshToken("");
-    navigate("/");
+    navigate("/groopie/");
   };
 
   const handleFetchAccessToken = async (): Promise<[boolean, string]> => {

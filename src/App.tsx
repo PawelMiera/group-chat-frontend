@@ -30,9 +30,13 @@ function App() {
           <Routes>
             <Route path="/groopie/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
             <Route path="/groopie/chat/" element={<ChatPage is_mobile={devOrientation}/>} />
+            <Route path="/groopie/chat" element={<ChatPage is_mobile={devOrientation}/>} />
             <Route path="/groopie/join/" element={<JoinPage />} />
+            <Route path="/groopie/join" element={<JoinPage />} />
             <Route path="/groopie/login/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
+            <Route path="/groopie/login" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
             <Route path="/groopie/*" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
+            <Route path="/groopie/*/" element={!devOrientation ? <LoginPage /> : <LoginPageMobile/>} />
           </Routes>
         </AuthProvider>
       </Router>
