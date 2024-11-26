@@ -24,7 +24,7 @@ function App() {
   }, []);
 
   return (
-    <CookiesProvider defaultSetOptions={{path:"/"}}>
+    <CookiesProvider defaultSetOptions={{path:"/", secure:true}}>
       <Router>
         <AuthProvider>
           <Routes>

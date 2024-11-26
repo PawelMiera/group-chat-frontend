@@ -156,6 +156,8 @@ const ChatComponent = (props: ChatComponentProps) => {
               {item.msg}
             </ChatBubble>
           ))}
+
+          {(props.messages.length == 0) ? <ChatBubble name="" avatar="" is_curr_user={false} message_time="" key="" start_animation={false} is_server={true}>Start by creating or joining a group!</ChatBubble> : ""}
         </div>
         <div className="sendMessageDiv">
           <textarea

@@ -195,7 +195,6 @@ export const ChatPage = (props: ChatPageProps) => {
       parsed_msg.hasOwnProperty("command") &&
       parsed_msg.hasOwnProperty("groupId")
     ) {
-      console.log(parsed_msg);
       const curr_group_id = Number(parsed_msg["groupId"]);
       if (parsed_msg["command"] == "updateUser") {
         updateGroupUsers(curr_group_id);

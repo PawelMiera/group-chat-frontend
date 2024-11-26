@@ -129,7 +129,7 @@ const Login = (props: MobileProps) => {
             Enter anonymously
           </Button>
 
-          <div className="h6 text-center align-self-bottom mt-auto">
+          <div className="h6 text-center mt-auto">
             Secure chat with browser-side encryption! <br />
             Our servers can't read your messages!
           </div>
