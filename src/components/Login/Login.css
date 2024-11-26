@@ -15,6 +15,7 @@
 
   .login-wrapper-mobile {
     display: flex;
+    height: 100dvh;
   }
 
   .login-form-container-mobile {

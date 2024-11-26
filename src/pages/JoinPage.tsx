@@ -12,7 +12,7 @@ export const JoinPage = () => {
         localStorage.setItem("joinGroup", JSON.stringify({"uuid": queryParameters.get("uuid"), "key": queryParameters.get("key")}));
     }
 
-    navigate("/");
+    navigate("/groopie/");
   }, []);
 
 
